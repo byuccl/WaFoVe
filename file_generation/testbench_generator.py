@@ -1,6 +1,7 @@
 """A simple function to return the amount of data stored in the input list."""
 
 import random
+import logging
 
 
 def input_num(data):
@@ -21,6 +22,8 @@ def total_num(data):
 def generate_random(data, random_list, test_num):
 
     """Generates the random signals for the testbench"""
+
+    logging.info(f"Generating {test_num} states for input signals.")
 
     for bits in data["input_bits_list"]:
         if bits == 0:

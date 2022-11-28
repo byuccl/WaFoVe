@@ -3,6 +3,7 @@ import argparse
 from pathlib import Path
 import shutil
 import sys
+import logging
 from file_parsing import parse_files, parse_diff
 from file_generation import (
     testbench_generator,
@@ -24,10 +25,12 @@ def generate_files(multiple_files, paths, test_num):
             paths["file"][i], Path(f"{paths['build_dir']/paths['modules'][i+1]}.v")
         )
         with open(paths["file"][i], "r") as file:
+            logging.info(f"Generating files for module #{i+1}")
 
             if i == 1:
                 # file_rewriter.fix_file(paths, i)
                 # Rewrites the files to have correct module names
+                logging.info(f"Parsing second design's signals.")
                 data = parse_files.parse_reversed(paths, i)
                 # Finds the IO names and bit sizes
                 paths["test"].unlink()  # Gets rid of the test.v file
@@ -35,6 +38,7 @@ def generate_files(multiple_files, paths, test_num):
             else:
                 # file_rewriter.fix_file(paths, i)
                 # Rewrites the files to have correct module names
+                logging.info(f"Parsing first design's signals.")
                 if multiple_files:
                     # The logic for how to parse the file depends on whether or not there are
                     # multiple verilog files involved in a design
@@ -44,19 +48,24 @@ def generate_files(multiple_files, paths, test_num):
                     data = parse_files.parse(file.name)
 
             if i == 0:
+                logging.info(f"Creating first randomized testbench.")
                 # Create the initial testbench with randomized inputs for all input ports
                 # (based upon bit-size)
                 testbench_generator.generate_first_testbench(paths, test_num, data, i)
             else:  # Build off of the old testbench to keep the same randomized values
+                logging.info(f"Creating second testbench based upon first's signals.")
                 testbench_generator.generate_testbench(paths, data, i)
 
             if i == 0:
+                logging.info(f"Generating first TCL script for gtkwave.")
                 tcl_generator.generate_first_tcl(paths, data, i)
                 # The first TCL will be generated based upon the IO port names
             else:
+                logging.info(f"Generating second TCL script for gtkwave.")
                 tcl_generator.generate_tcl(paths, i)
                 # The second TCL just needs to change module names from the first one
 
+            logging.info(f"Generating VCD file.")
             waveform_generator.generate_vcd(paths, i)
             # All previously generated files are ran through Icarus and then GTKwave, creating
             # the files we need.
@@ -127,6 +136,14 @@ def parse_args(package_path):
     )
 
     parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Allows for printing of debugging info & tracing the tool's flow.",
+        default=False,
+    )
+
+    parser.add_argument(
         "--vivado",
         action="store",
         help="Additional argument for waveform, specifies the Vivado Bin Path to launch Vivado.",
@@ -144,6 +161,9 @@ def parse_args(package_path):
     parser.add_argument("fileB", metavar="File2", help="Path to file 2.")
 
     args = parser.parse_args()
+
+    if(args.verbose):
+        logging.root.setLevel(logging.NOTSET)
 
     return args
 

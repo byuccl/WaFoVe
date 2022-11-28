@@ -4,7 +4,7 @@ import shutil
 import unittest
 from pathlib import Path
 from templates import get_paths
-from compare_waveforms import compare_waveforms
+import compare_waveforms
 
 class TestCompareWaveforms(unittest.TestCase):
 

@@ -1,5 +1,5 @@
 """Handles TCL generation that is used by GTKWave for viewing waveforms."""
-
+import logging
 
 def generate_first_tcl(paths, data, i):
 
@@ -18,6 +18,7 @@ def generate_first_tcl(paths, data, i):
         line = f"{line}]\n"
         TCL.write(line)
         TCL.write("gtkwave::addSignalsFromList $filter\n")
+    logging.info(f"Generated file {paths['modules'][i+1]}.tcl")
 
 
 def generate_tcl(paths, i):
@@ -36,3 +37,4 @@ def generate_tcl(paths, i):
                 if paths["modules"][1] in line:
                     line = line.replace(paths["modules"][1], paths["modules"][i + 1])
                 TCL.write(line)
+    logging.info(f"Generated file {paths['modules'][i+1]}.tcl")

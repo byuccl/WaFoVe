@@ -1,5 +1,6 @@
 """Handles parsing the Verilog files to find the signal names and lengths."""
 import spydrnet as sdn
+import logging
 
 
 def get_data(data, ports):
@@ -34,6 +35,7 @@ def parse(file):
 
     # Use design.yaml_path to find yaml file. Read to find if more modules exist.
     data = get_data(data, definition.ports)
+    logging.info(f"Parsed IOs {data['total_list']}")
     return data
 
 
@@ -80,6 +82,7 @@ def parse_multiple(file, reversed_file):
         else:
             not_port = False
     reversed_file.unlink()
+    logging.info(f"Parsed IOs {data['total_list']}")
     return data
 
 
