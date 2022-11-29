@@ -7,6 +7,8 @@ Use `make` while in the WaFoVe directory.
 
 **How To Run**
 
+Use the environement created in the make process by running `. ./venv/bin/activate`
+
 `usage: compare_waveforms.py [--base BasePath] [--tech TechLib] [-f] [--newTests] [--testBench TBLocation] [-t TESTS] [--vivado VIVADO] [--waveform] File1 File2`
 
 positional arguments:
