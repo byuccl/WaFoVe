@@ -3,8 +3,8 @@
 import shutil
 import unittest
 from pathlib import Path
-from templates import get_paths
-import compare_waveforms
+from wafove.templates import get_paths
+from wafove import compare_waveforms
 
 class TestCompareWaveforms(unittest.TestCase):
 

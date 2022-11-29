@@ -4,14 +4,14 @@ from pathlib import Path
 import shutil
 import sys
 import logging
-from file_parsing import parse_files, parse_diff
-from file_generation import (
+from wafove.file_parsing import parse_files, parse_diff
+from wafove.file_generation import (
     testbench_generator,
     tcl_generator,
     waveform_generator,
 )
-from templates import get_paths
-from tools import analyze_graph
+from wafove.templates import get_paths
+from wafove.tools import analyze_graph
 
 
 def generate_files(multiple_files, paths, test_num):
