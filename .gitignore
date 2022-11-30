@@ -2,3 +2,6 @@
 *__pycache__
 /wafove/third_party/yosys/cells*
 /wafove/out
+build
+dist
+wafove.egg-info
