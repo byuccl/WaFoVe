@@ -1,11 +1,14 @@
 """A file that handles waveform generation using iverilog."""
 
 import subprocess
+import logging
 
 
 def generate_vcd(paths, i):
 
     """Uses IVerilog to create a VCD file for viewing waveforms"""
+
+    logging.info("Using iverilog to create a .dsn file...")
 
     subprocess.run(
         [
@@ -20,5 +23,7 @@ def generate_vcd(paths, i):
 
     subprocess.run(["vvp", str(paths["dsn"])])
     subprocess.run(["mv", "test.vcd", paths["vcd"][i]])
+
+    logging.info(f"The dsn file was successfuly converted into {paths['vcd'][i]}")
 
     paths["dsn"].unlink()

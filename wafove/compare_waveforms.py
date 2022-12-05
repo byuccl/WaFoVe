@@ -19,18 +19,21 @@ def generate_files(multiple_files, paths, test_num):
     parsers for the input & output names, then
     it calls the testbench generators, finally it calls the TCL generators. It then increments
     to the next file and clears the data structure."""
+
+    logging.info("Running generation processes...\n\n")
+
     data = {}  # Contains all of the IOs for the design.
     for i in range(2):
         shutil.copyfile(
             paths["file"][i], Path(f"{paths['build_dir']/paths['modules'][i+1]}.v")
         )
         with open(paths["file"][i], "r") as file:
-            logging.info(f"Generating files for module #{i+1}")
+            logging.info(f"Generating files for module #{i+1}...")
 
             if i == 1:
                 # file_rewriter.fix_file(paths, i)
                 # Rewrites the files to have correct module names
-                logging.info(f"Parsing second design's signals.")
+                logging.info(f"Parsing second design's signals...")
                 data = parse_files.parse_reversed(paths, i)
                 # Finds the IO names and bit sizes
                 paths["test"].unlink()  # Gets rid of the test.v file
@@ -38,7 +41,7 @@ def generate_files(multiple_files, paths, test_num):
             else:
                 # file_rewriter.fix_file(paths, i)
                 # Rewrites the files to have correct module names
-                logging.info(f"Parsing first design's signals.")
+                logging.info(f"Parsing first design's signals...")
                 if multiple_files:
                     # The logic for how to parse the file depends on whether or not there are
                     # multiple verilog files involved in a design
@@ -48,27 +51,29 @@ def generate_files(multiple_files, paths, test_num):
                     data = parse_files.parse(file.name)
 
             if i == 0:
-                logging.info(f"Creating first randomized testbench.")
+                logging.info(f"Generating first randomized testbench...")
                 # Create the initial testbench with randomized inputs for all input ports
                 # (based upon bit-size)
                 testbench_generator.generate_first_testbench(paths, test_num, data, i)
             else:  # Build off of the old testbench to keep the same randomized values
-                logging.info(f"Creating second testbench based upon first's signals.")
+                logging.info(f"Generating second testbench based upon first's signals...")
                 testbench_generator.generate_testbench(paths, data, i)
 
             if i == 0:
-                logging.info(f"Generating first TCL script for gtkwave.")
+                logging.info(f"Generating first TCL script for gtkwave...")
                 tcl_generator.generate_first_tcl(paths, data, i)
                 # The first TCL will be generated based upon the IO port names
             else:
-                logging.info(f"Generating second TCL script for gtkwave.")
+                logging.info(f"Generating second TCL script for gtkwave...")
                 tcl_generator.generate_tcl(paths, i)
                 # The second TCL just needs to change module names from the first one
 
-            logging.info(f"Generating VCD file.")
+            logging.info(f"Generating VCD file...")
             waveform_generator.generate_vcd(paths, i)
             # All previously generated files are ran through Icarus and then GTKwave, creating
             # the files we need.
+            logging.info(f"Successfully ran generation processes on module #{i+1}\n\n")
+    logging.info(f"Successfully finished all generation processes\n\n")
 
 
 def run_test(paths):
@@ -77,6 +82,9 @@ def run_test(paths):
     that have just been generated, then checks the difference between gtkwave's two outputs. If
     there are more than 32 lines that
     are different, the designs must be unequivalent."""
+
+    logging.info("Comparing VCD files...")
+
     return parse_diff.check_diff(paths)
     # Checks the two VCD files against each other. Returns either equivalent or not depending
     # on how many lines are different.

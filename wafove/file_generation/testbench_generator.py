@@ -23,7 +23,7 @@ def generate_random(data, random_list, test_num):
 
     """Generates the random signals for the testbench"""
 
-    logging.info(f"Generating {test_num} states for input signals.")
+    logging.info(f"Generating {test_num} states for input signals...")
 
     for bits in data["input_bits_list"]:
         if bits == 0:
@@ -184,6 +184,7 @@ def generate_testbench(paths, data, i):
     first generated testbench and replaces everything that is specific
     to that module with this module's information."""
 
+    logging.info(f"Replicating all tests from {paths['modules'][1]}...")
     with (paths["tb"][0]).open("r") as sample:
         with paths["tb"][i].open("x") as tb:
             for line in sample:

@@ -1,5 +1,6 @@
 """A module used to accurately check the difference between VCD files"""
 
+import logging
 
 def parse_io(line, input_output, words, new_word):
 
@@ -162,13 +163,14 @@ def append_unequivalent_data(unequivalent_data, data):
                 unequivalent_data["impl"].append(i_sig)
                 unequivalent_data["rev"].append(r_sig)
                 unequivalent_data["time"].append((time) / 1000)
+                logging.info(f"[{data[0]['name'][index]}] unequivalent at time {int(time / 1000)}us")
 
             index = index + 1
 
             if index == len(data[0]["name"]):
                 index = 0
 
-        time = time + 1000
+        time = time + 500
 
     return unequivalent_data
 
@@ -193,6 +195,9 @@ def check_diff(paths):
 
     # If any lines exist in the diff file, then there must be unequivalency at some point
     # in the design
+    logging.info("Finished comparing VCD files\n")
+    logging.info("Returning results...")
+    
     if len(unequivalent_data["impl"]) > 0:
         total = 0
 
@@ -214,16 +219,13 @@ def check_diff(paths):
             ):
 
                 output.write(
-                    f"{time}ns, Signal {name}, Impl {impl}, Reversed {rev}\n\n"
+                    f"{time}us, Signal {name}, Impl {impl}, Reversed {rev}\n\n"
                 )
                 total = total + 1
 
             output.write(
                 f"\nThere are {total} total lines where these waveforms are unequivalent"
             )
-
-        with paths["diff"].open("r") as file:
-            print(file.read())
 
         print(f"See {paths['diff']} for more info")
 
