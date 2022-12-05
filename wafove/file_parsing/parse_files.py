@@ -35,8 +35,12 @@ def parse(file):
 
     # Use design.yaml_path to find yaml file. Read to find if more modules exist.
     data = get_data(data, definition.ports)
-    logging.info(f"Parsed Input IOs {data['input_list']} with respective bit sizes {data['input_bits_list']}")
-    logging.info(f"Parsed Output IOs {data['output_list']} with respective bit sizes {data['output_bits_list']}")
+    logging.info(
+        f"Parsed Input IOs {data['input_list']} " +
+        f"with respective bit sizes {data['input_bits_list']}")
+    logging.info(
+        f"Parsed Output IOs {data['output_list']} " + 
+        f"with respective bit sizes {data['output_bits_list']}")
     return data
 
 
@@ -83,8 +87,12 @@ def parse_multiple(file, reversed_file):
         else:
             not_port = False
     reversed_file.unlink()
-    logging.info(f"Parsed Input IOs {data['input_list']} with respective bit sizes {data['input_bits_list']}")
-    logging.info(f"Parsed Output IOs {data['output_list']} with respective bit sizes {data['output_bits_list']}")
+    logging.info(
+        f"Parsed Input IOs {data['input_list']} " +  
+        f"with respective bit sizes {data['input_bits_list']}")
+    logging.info(
+        f"Parsed Output IOs {data['output_list']} " +  
+        f"with respective bit sizes {data['output_bits_list']}")
     return data
 
 

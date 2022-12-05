@@ -163,7 +163,8 @@ def append_unequivalent_data(unequivalent_data, data):
                 unequivalent_data["impl"].append(i_sig)
                 unequivalent_data["rev"].append(r_sig)
                 unequivalent_data["time"].append((time) / 1000)
-                logging.info(f"[{data[0]['name'][index]}] unequivalent at time {int(time / 1000)}us")
+                logging.debug(
+                    f"[{data[0]['name'][index]}] unequivalent at time {int(time / 1000)}us")
 
             index = index + 1
 
