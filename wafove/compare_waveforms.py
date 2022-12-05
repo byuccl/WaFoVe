@@ -123,7 +123,7 @@ def parse_args(package_path):
     parser.add_argument(
         "--newTests",
         action="store_true",
-        help="Location of the testbench template file (defaults to sample_tb.v in templates).",
+        help="Flag that decides whether old tests should be deleted and new tests should be run.",
         default=False,
     )
 
