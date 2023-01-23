@@ -30,7 +30,7 @@ class TestCompareWaveforms(unittest.TestCase):
 
         path = self.path_layout("alu_test", "alu_impl.v", "alu_reversed.v")
         self.refresh_directory(path)
-        compare_waveforms.generate_files(False, path, 100, 0)
+        compare_waveforms.generate_files(False, path, 100, 0, False)
         self.assertEqual(compare_waveforms.run_test(path), True)
 
     def test_2(self):
@@ -39,7 +39,7 @@ class TestCompareWaveforms(unittest.TestCase):
 
         path = self.path_layout("corrupt_alu_test", "alu_impl.v", "alu_reversed.v")
         self.refresh_directory(path)
-        compare_waveforms.generate_files(False, path, 100, 0)
+        compare_waveforms.generate_files(False, path, 100, 0, False)
         self.assertEqual(compare_waveforms.run_test(path), False)
 
     def test_3(self):
@@ -48,7 +48,7 @@ class TestCompareWaveforms(unittest.TestCase):
 
         path = self.path_layout("calc_test", "calc_impl.v", "calc_reversed.v")
         self.refresh_directory(path)
-        compare_waveforms.generate_files(True, path, 100, 0)
+        compare_waveforms.generate_files(True, path, 100, 0, False)
         self.assertEqual(compare_waveforms.run_test(path), True)
 
     def test_4(self):
@@ -57,7 +57,7 @@ class TestCompareWaveforms(unittest.TestCase):
 
         path = self.path_layout("calc_test", "calc_impl.v", "calc_reversed.v")
         self.refresh_directory(path)
-        compare_waveforms.generate_files(True, path, 10000, 0)
+        compare_waveforms.generate_files(True, path, 10000, 0, False)
         self.assertEqual(compare_waveforms.run_test(path), True)
 
     def test_5(self):
@@ -73,7 +73,7 @@ class TestCompareWaveforms(unittest.TestCase):
     )
         self.refresh_directory(path)
         with self.assertRaises(FileNotFoundError):
-            compare_waveforms.generate_files(True, path, 100, 0)
+            compare_waveforms.generate_files(True, path, 100, 0, False)
 
     def test_6(self):
 
@@ -88,7 +88,7 @@ class TestCompareWaveforms(unittest.TestCase):
     )
         self.refresh_directory(path)
         with self.assertRaises(FileNotFoundError):
-            compare_waveforms.generate_files(True, path, 100, 0)
+            compare_waveforms.generate_files(True, path, 100, 0, False)
 
     def test_7(self):
 
@@ -96,11 +96,11 @@ class TestCompareWaveforms(unittest.TestCase):
 
         path = self.path_layout("alu_test", "alu_impl.v", "alu_reversed.v")
         self.refresh_directory(path)
-        compare_waveforms.generate_files(False, path, 100, 0)
+        compare_waveforms.generate_files(False, path, 100, 0, False)
         Path(f"{package}/temp").mkdir()
         shutil.move(f"{path['build_dir']}/alu_impl.vcd", f"{package}/temp/alu_impl.vcd")
         self.refresh_directory(path)
-        compare_waveforms.generate_files(False, path, 100, 0)
+        compare_waveforms.generate_files(False, path, 100, 0, False)
         Path(f"{path['build_dir']}/alu_reversed.vcd").unlink()
         shutil.move(f"{package}/temp/alu_impl.vcd", f"{path['build_dir']}/alu_reversed.vcd")
         output = parse_diff.check_diff(path)
@@ -114,11 +114,11 @@ class TestCompareWaveforms(unittest.TestCase):
         
         path = self.path_layout("alu_test", "alu_impl.v", "alu_reversed.v")
         self.refresh_directory(path)
-        compare_waveforms.generate_files(False, path, 100, 0)
+        compare_waveforms.generate_files(False, path, 100, 0, False)
         Path(f"{package}/temp").mkdir()
         shutil.move(f"{path['build_dir']}/alu_impl.vcd", f"{package}/temp/alu_impl.vcd")
         self.refresh_directory(path)
-        compare_waveforms.generate_files(False, path, 100, 500)
+        compare_waveforms.generate_files(False, path, 100, 500, False)
         Path(f"{path['build_dir']}/alu_reversed.vcd").unlink()
         shutil.move(f"{package}/temp/alu_impl.vcd", f"{path['build_dir']}/alu_reversed.vcd")
         output = parse_diff.check_diff(path)
@@ -126,9 +126,25 @@ class TestCompareWaveforms(unittest.TestCase):
         self.refresh_directory(path)
         self.assertFalse(output)
 
+    def test_9(self):
+
+        """Confirms that two generations with all signals logged are equivalent."""
+        
+        path = self.path_layout("alu_test", "alu_impl.v", "alu_reversed.v")
+        self.refresh_directory(path)
+        compare_waveforms.generate_files(False, path, 100, 0, True)
+        Path(f"{package}/temp").mkdir()
+        shutil.move(f"{path['build_dir']}/alu_impl.vcd", f"{package}/temp/alu_impl.vcd")
+        self.refresh_directory(path)
+        compare_waveforms.generate_files(False, path, 100, 0, True)
+        Path(f"{path['build_dir']}/alu_reversed.vcd").unlink()
+        shutil.move(f"{package}/temp/alu_impl.vcd", f"{path['build_dir']}/alu_reversed.vcd")
+        output = parse_diff.check_diff(path)
+        shutil.rmtree(f"{package}/temp")
+        self.refresh_directory(path)
+        self.assertTrue(output)
+
     
-
-
 if __name__ == '__main__':
     if __file__ != "compare_waveforms.py":
         package = Path(Path().absolute() / __file__[0 : len(__file__) - 25])

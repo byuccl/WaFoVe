@@ -58,7 +58,7 @@ def past_initial_data(line, data, past_header):
 
     if past_header is True:
 
-        if "$dumpvars" in line:
+        if "$dumpvars" in line or "$scope module instanceOf $end" in line:
             return (True, data)
 
         if (

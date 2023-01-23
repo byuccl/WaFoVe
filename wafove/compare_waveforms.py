@@ -14,7 +14,7 @@ from wafove.templates import get_paths
 from wafove.tools import analyze_graph
 
 
-def generate_files(multiple_files, paths, test_num, seed):
+def generate_files(multiple_files, paths, test_num, seed, all_signals):
     """The main function that generates testbenches and TCL files. It begins by calling the
     parsers for the input & output names, then
     it calls the testbench generators, finally it calls the TCL generators. It then increments
@@ -58,7 +58,9 @@ def generate_files(multiple_files, paths, test_num, seed):
             else:  # Build off of the old testbench to keep the same randomized values
                 logging.info(f"Generating second testbench based upon first's signals...")
                 testbench_generator.generate_testbench(paths, data, i)
-
+            if all_signals:
+                logging.info(f"Appending testbenchs to show all signals...")
+                testbench_generator.generate_full_testbench(paths, i)
             if i == 0:
                 logging.info(f"Generating first TCL script for gtkwave...")
                 tcl_generator.generate_first_tcl(paths, data, i)
@@ -95,6 +97,14 @@ def parse_args(package_path):
     """Creates the argument parser for the Vivado Launcher."""
 
     parser = argparse.ArgumentParser(description="Run WaFoVe.")
+
+    parser.add_argument(
+        "-a",
+        "--allSignals",
+        action="store_true",
+        help="Compares all signals rather than IOs (Typically returns false).",
+        default=False
+    )
 
     parser.add_argument(
         "--base",
@@ -229,7 +239,7 @@ if __name__ == "__main__":
     ):
         print("No tests exist. Defaulting to create new testbenches.")
 
-    generate_files(True, path, user_args.tests, user_args.seed)
+    generate_files(True, path, user_args.tests, user_args.seed, user_args.allSignals)
     if run_test(path) is True:
         print("Designs are equivalent!")
     else:

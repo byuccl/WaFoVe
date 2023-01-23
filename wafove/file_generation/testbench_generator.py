@@ -207,3 +207,21 @@ def generate_testbench(paths, data, i):
                             line = f"{line}{total_data}, "
 
                 tb.write(line)
+
+def generate_full_testbench(paths, i):
+    """Makes a simple change to the testbench so instead of only dumping IOs, it dumps all signals instead."""
+    with (paths["tb"][i]).open("r") as tb:
+        with (paths["build_dir"] / "temp_tb.v").open("x") as temp:
+            for line in tb:
+                if line[0:15] == "    $dumpvars(1":
+                    line = line.replace("$dumpvars(1", "$dumpvars(0")
+                temp.write(line)
+    paths["tb"][i].unlink()
+    with paths["tb"][i].open("x") as tb:
+        with (paths["build_dir"] / "temp_tb.v").open("r") as temp:
+            for line in temp:
+                tb.write(line)
+    
+    (paths["build_dir"] / "temp_tb.v").unlink()   
+
+
