@@ -3,6 +3,7 @@
 import shutil
 import unittest
 from pathlib import Path
+from wafove.file_parsing import parse_diff
 from wafove.templates import get_paths
 from wafove import compare_waveforms
 
@@ -29,7 +30,7 @@ class TestCompareWaveforms(unittest.TestCase):
 
         path = self.path_layout("alu_test", "alu_impl.v", "alu_reversed.v")
         self.refresh_directory(path)
-        compare_waveforms.generate_files(False, path, 100)
+        compare_waveforms.generate_files(False, path, 100, 0)
         self.assertEqual(compare_waveforms.run_test(path), True)
 
     def test_2(self):
@@ -38,7 +39,7 @@ class TestCompareWaveforms(unittest.TestCase):
 
         path = self.path_layout("corrupt_alu_test", "alu_impl.v", "alu_reversed.v")
         self.refresh_directory(path)
-        compare_waveforms.generate_files(False, path, 100)
+        compare_waveforms.generate_files(False, path, 100, 0)
         self.assertEqual(compare_waveforms.run_test(path), False)
 
     def test_3(self):
@@ -47,7 +48,7 @@ class TestCompareWaveforms(unittest.TestCase):
 
         path = self.path_layout("calc_test", "calc_impl.v", "calc_reversed.v")
         self.refresh_directory(path)
-        compare_waveforms.generate_files(True, path, 100)
+        compare_waveforms.generate_files(True, path, 100, 0)
         self.assertEqual(compare_waveforms.run_test(path), True)
 
     def test_4(self):
@@ -56,7 +57,7 @@ class TestCompareWaveforms(unittest.TestCase):
 
         path = self.path_layout("calc_test", "calc_impl.v", "calc_reversed.v")
         self.refresh_directory(path)
-        compare_waveforms.generate_files(True, path, 10000)
+        compare_waveforms.generate_files(True, path, 10000, 0)
         self.assertEqual(compare_waveforms.run_test(path), True)
 
     def test_5(self):
@@ -72,7 +73,7 @@ class TestCompareWaveforms(unittest.TestCase):
     )
         self.refresh_directory(path)
         with self.assertRaises(FileNotFoundError):
-            compare_waveforms.generate_files(True, path, 100)
+            compare_waveforms.generate_files(True, path, 100, 0)
 
     def test_6(self):
 
@@ -87,7 +88,45 @@ class TestCompareWaveforms(unittest.TestCase):
     )
         self.refresh_directory(path)
         with self.assertRaises(FileNotFoundError):
-            compare_waveforms.generate_files(True, path, 100)
+            compare_waveforms.generate_files(True, path, 100, 0)
+
+    def test_7(self):
+
+        """Confirms that two generations with the same seed will have the same results."""
+
+        path = self.path_layout("alu_test", "alu_impl.v", "alu_reversed.v")
+        self.refresh_directory(path)
+        compare_waveforms.generate_files(False, path, 100, 0)
+        Path(f"{package}/temp").mkdir()
+        shutil.move(f"{path['build_dir']}/alu_impl.vcd", f"{package}/temp/alu_impl.vcd")
+        self.refresh_directory(path)
+        compare_waveforms.generate_files(False, path, 100, 0)
+        Path(f"{path['build_dir']}/alu_reversed.vcd").unlink()
+        shutil.move(f"{package}/temp/alu_impl.vcd", f"{path['build_dir']}/alu_reversed.vcd")
+        output = parse_diff.check_diff(path)
+        shutil.rmtree(f"{package}/temp")
+        self.refresh_directory(path)
+        self.assertTrue(output)
+
+    def test_8(self):
+
+        """Confirms that two generations with different seeds will have different results."""
+        
+        path = self.path_layout("alu_test", "alu_impl.v", "alu_reversed.v")
+        self.refresh_directory(path)
+        compare_waveforms.generate_files(False, path, 100, 0)
+        Path(f"{package}/temp").mkdir()
+        shutil.move(f"{path['build_dir']}/alu_impl.vcd", f"{package}/temp/alu_impl.vcd")
+        self.refresh_directory(path)
+        compare_waveforms.generate_files(False, path, 100, 500)
+        Path(f"{path['build_dir']}/alu_reversed.vcd").unlink()
+        shutil.move(f"{package}/temp/alu_impl.vcd", f"{path['build_dir']}/alu_reversed.vcd")
+        output = parse_diff.check_diff(path)
+        shutil.rmtree(f"{package}/temp")
+        self.refresh_directory(path)
+        self.assertFalse(output)
+
+    
 
 
 if __name__ == '__main__':

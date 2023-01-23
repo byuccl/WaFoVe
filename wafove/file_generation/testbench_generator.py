@@ -23,7 +23,7 @@ def generate_random(data, random_list, test_num):
 
     """Generates the random signals for the testbench"""
 
-    logging.info(f"Generating {test_num} states for input signals...")
+    logging.info(f"Generating {test_num} states for input signals.")
 
     for bits in data["input_bits_list"]:
         if bits == 0:
@@ -162,13 +162,15 @@ def parse_line(line, data, tb, test_num, paths, random_list):
     return test_num
 
 
-def generate_first_testbench(paths, test_num, data, i):
+def generate_first_testbench(paths, test_num, data, i, seed):
 
     """This function creates the initial testbench that will be modified
     by the reversed-netlist.  It reads in a sample testbench and replaces
     certain variables with the corresponding information from the data
     structure. It also sets the variables equal to random numbers that
     are generated to be within the corresponding variable's bit range."""
+
+    random.seed(seed) #Sets random's seed to the user's input.
 
     random_list = []
     with paths["sample_tb"].open("r") as sample:
@@ -184,7 +186,6 @@ def generate_testbench(paths, data, i):
     first generated testbench and replaces everything that is specific
     to that module with this module's information."""
 
-    logging.info(f"Replicating all tests from {paths['modules'][1]}...")
     with (paths["tb"][0]).open("r") as sample:
         with paths["tb"][i].open("x") as tb:
             for line in sample:

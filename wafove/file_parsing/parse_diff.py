@@ -41,9 +41,11 @@ def parse_signals(line):
     new_word = False
 
     if "$var wire" in line:
+        #These are the outputs in VCD format
         words = parse_io(line, "wire", words, new_word)
 
     if "$var reg" in line:
+        #These are the inputs in VCD format
         words = parse_io(line, "reg", words, new_word)
 
     return words
@@ -152,13 +154,24 @@ def append_unequivalent_data(unequivalent_data, data):
 
     index = 0
     time = 0
+    signal = []
+    raised = []
+    last_val = []
 
     for impl, rev in zip(data[0]["state"], data[1]["state"]):
 
         for i_sig, r_sig in zip(impl, rev):
+            if data[0]["name"][index] not in signal:
+                signal.append(data[0]["name"][index])
+                raised.append(1)
+                last_val.append(i_sig)
+            else:
+                name = signal.index(data[0]["name"][index])
+                if last_val[name] != i_sig:
+                    raised[name] = raised[name] + 1
+                    last_val[name] = i_sig
 
             if i_sig != r_sig:
-
                 unequivalent_data["name"].append(data[0]["name"][index])
                 unequivalent_data["impl"].append(i_sig)
                 unequivalent_data["rev"].append(r_sig)
@@ -172,7 +185,26 @@ def append_unequivalent_data(unequivalent_data, data):
                 index = 0
 
         time = time + 500
-
+    wasRaised = False
+    index = 0
+    effective = 0
+    print()
+    for i in raised:
+        if i == 1:
+            print(f"{signal[index]} was not raised more than once!")
+            wasRaised = True
+            effective = effective + 1
+        index = index + 1
+    print()
+    if wasRaised is False:
+        print("Testbench raised all IOs")
+    else:
+        for i,j in zip(signal, raised):
+            print(f"{i} was raised {j} time(s)")
+        print()
+        print(
+            f"Testbench's IO mappings were " + 
+            f"{round((((len(signal)-effective)/len(signal))*100),2)}% effective.")
     return unequivalent_data
 
 

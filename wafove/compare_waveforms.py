@@ -14,7 +14,7 @@ from wafove.templates import get_paths
 from wafove.tools import analyze_graph
 
 
-def generate_files(multiple_files, paths, test_num):
+def generate_files(multiple_files, paths, test_num, seed):
     """The main function that generates testbenches and TCL files. It begins by calling the
     parsers for the input & output names, then
     it calls the testbench generators, finally it calls the TCL generators. It then increments
@@ -54,7 +54,7 @@ def generate_files(multiple_files, paths, test_num):
                 logging.info(f"Generating first randomized testbench...")
                 # Create the initial testbench with randomized inputs for all input ports
                 # (based upon bit-size)
-                testbench_generator.generate_first_testbench(paths, test_num, data, i)
+                testbench_generator.generate_first_testbench(paths, test_num, data, i, seed)
             else:  # Build off of the old testbench to keep the same randomized values
                 logging.info(f"Generating second testbench based upon first's signals...")
                 testbench_generator.generate_testbench(paths, data, i)
@@ -125,6 +125,14 @@ def parse_args(package_path):
         action="store_true",
         help="Flag that decides whether old tests should be deleted and new tests should be run.",
         default=False,
+    )
+
+    parser.add_argument(
+        "-s",
+        "--seed",
+        action="store",
+        help="The seed random will use to generate the specific testbench. Defaults to 0.",
+        default=0,
     )
 
     parser.add_argument(
@@ -221,7 +229,7 @@ if __name__ == "__main__":
     ):
         print("No tests exist. Defaulting to create new testbenches.")
 
-    generate_files(True, path, user_args.tests)
+    generate_files(True, path, user_args.tests, user_args.seed)
     if run_test(path) is True:
         print("Designs are equivalent!")
     else:
