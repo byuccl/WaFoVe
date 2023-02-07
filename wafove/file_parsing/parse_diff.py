@@ -50,20 +50,15 @@ def parse_signals(line):
     return words
 
 
-def past_initial_data(line, data, past_header, checking_efficiency):
+def past_initial_data(line, data, past_header):
 
     """Parses all of the data at the start of the files to set the initial values for every
     variable."""
 
     if past_header is True:
 
-        if checking_efficiency:
-            if "$dumpvars" in line or "$scope module" in line:
-                if "$scope module instanceOf $end" not in line:
-                    return(True, data)
-        else:
-            if "$dumpvars" in line or "$scope module instanceOf $end" in line:
-                return (True, data)
+        if "$dumpvars" in line or "$scope module instanceOf $end" in line:
+            return (True, data)
 
         if (
             "$upscope" not in line
@@ -77,14 +72,9 @@ def past_initial_data(line, data, past_header, checking_efficiency):
                 if found_data[0] == "1":
                     data["name"].append(found_data[2])
                     data["signal"].append(found_data[1])
-                    if checking_efficiency:
-                        data["state"].append(0)
-
                 else:
                     data["name"].append(found_data[2])
                     data["signal"].append(found_data[1])
-                    if checking_efficiency:
-                        data["state"].append(0)
 
     else:
         if "$scope module" in line:
@@ -130,33 +120,30 @@ def inc_change(line, data, signals):
     return(data)
 
 
-def parse_line(line, data, monitor, checking_efficiency):
+def parse_line(line, data, monitor):
 
     """Parses a singular line from the VCD file and stores the data in a data array."""
 
     if monitor["past_header"] is False:
         monitor["past_header"], data = past_initial_data(
-            line, data, monitor["past_header"], checking_efficiency
+            line, data, monitor["past_header"]
         )
     elif monitor["past_definitions"] is False:
         monitor["past_definitions"], data = past_initial_data(
-            line, data, monitor["past_header"], checking_efficiency
+            line, data, monitor["past_header"]
         )
     else:
-        if not checking_efficiency:
-            if not monitor["changed_data"]:
-                monitor["changed_data"] = ["0" for i in range(len(data["signal"]))]
-            if monitor["new_time"]:
-                data["state"].append(monitor["changed_data"][0 : len(data["signal"])])
-            monitor["new_time"], monitor["changed_data"] = check_change(
-                line, monitor["changed_data"], data["signal"]
-            )
-        else:
-            data = inc_change(line, data, data["signal"])
+        if not monitor["changed_data"]:
+            monitor["changed_data"] = ["0" for i in range(len(data["signal"]))]
+        if monitor["new_time"]:
+            data["state"].append(monitor["changed_data"][0 : len(data["signal"])])
+        monitor["new_time"], monitor["changed_data"] = check_change(
+            line, monitor["changed_data"], data["signal"]
+        )
     return data, monitor
 
 
-def parse_data(paths, time_related_data, i, checking_efficiency):
+def parse_data(paths, time_related_data, i):
 
     """Parses each vcd file, finds all occurences of a signal's state, then compares them against
     each other to confirm that the two signals are equivalent."""
@@ -170,18 +157,10 @@ def parse_data(paths, time_related_data, i, checking_efficiency):
     monitor["past_definitions"] = False
     monitor["new_time"] = False
     monitor["changed_data"] = []
-    x = 0
-    y = 0
 
     with paths["vcd"][i].open("r") as file:
         for line in file:
-            data, monitor = parse_line(line, data, monitor, checking_efficiency)
-            if (checking_efficiency):
-                if (x == 100000):
-                    y = y + 1
-                    print(y * 100000)
-                    x = 0
-                x = x + 1
+            data, monitor = parse_line(line, data, monitor)
 
     time_related_data.append(data)
     return time_related_data
@@ -246,20 +225,99 @@ def append_unequivalent_data(unequivalent_data, data):
             f"{round((((len(signal)-effective)/len(signal))*100),2)}% effective.")
     return unequivalent_data
 
-def check_tb_effectiveness(test):
-    misses = 0
+def past_initial_tb_data(line, data, past_header):
+
+    """Parses all of the data at the start of the file. Stores it in dictionary format."""
+
+    if past_header is True:
+
+        if "$dumpvars" in line or "$scope module" in line:
+            if "$scope module instanceOf $end" not in line:
+                return(True, data)
+
+        if (
+            "$upscope" not in line
+            and "$enddefinitions" not in line
+            and "#0" not in line 
+            and "$scope module instanceOf $end" not in line
+        ):
+            found_data = parse_signals(line)
+            if found_data:
+                    data[found_data[1]] = (found_data[1], found_data[2], 0)
+
+    else:
+        if "$scope module" in line:
+            return (True, data)
+
+    return (False, data)
+
+def inc_tb_change(line, signals):
+
+    """Handles incrementing changes on a signal in the dictionary for all signals."""
+
+    if line[0] == "0" or line[0] == "1":
+        key = line[1 : len(line) - 1]
+        if key in signals:
+            signals[key] = (signals[key][0], signals[key][1], signals[key][2] + 1)
+
+    elif " " in line:
+        key = line[line.index(" ") + 1 : len(line) - 1 ]
+        if key in signals:
+            signals[key] = (signals[key][0], signals[key][1], signals[key][2] + 1)
+
+    elif line[0] == "#":
+        return signals
+    
+    return(signals)
+
+def parse_tb_line(line, signals, monitor):
+
+    """Parses a singular line from the VCD file and stores the data in a dictionary of signals."""
+
+    if monitor["past_header"] is False:
+        monitor["past_header"], signals = past_initial_tb_data(
+            line, signals, monitor["past_header"]
+        )
+    elif monitor["past_definitions"] is False:
+        monitor["past_definitions"], signals = past_initial_tb_data(
+            line, signals, monitor["past_header"]
+        )
+    else:
+        signals = inc_tb_change(line, signals)
+    return signals, monitor
+
+def parse_tb_data(paths, time_related_data, i):
+
+    """Parses each vcd file and finds all occurences of a signal's state."""
+
+    signals = {}
+    monitor = {}
+    monitor["past_header"] = False
+    monitor["past_definitions"] = False
+    monitor["new_time"] = False
+    monitor["changed_data"] = []
+
+    with paths["vcd"][i].open("r") as file:
+        for line in file:
+            signals, monitor = parse_tb_line(line, signals, monitor)
+
+    time_related_data.append(signals)
+    return time_related_data
+
+def check_signals(test):
+
+    """Finds the efficiency of a given testbench's set of signals."""
+
     missedSignals = []
-    for i,j in zip(test[0]["name"], test[0]["state"]):
-        print(f"Signal {i} raised {j} times")
-        if (j == 1) | (j == 0):
-            misses = misses + 1
-            missedSignals.append(i)
-    print(f"Total Number of Signals: {len(test[0]['name'])}")
-    efficiency = round((100-((misses / len(test[0]['name']))*100)),2)
-    print(f"Testbench efficiency w/ all signals: {efficiency}%\n")
-    print("These signals were not raised more than once...")
-    for i in missedSignals:
-        print(f"Missed signal: {i}")
+    for i in test:
+        if(test[i][2] == 1) | (test[i][2] == 0):
+            missedSignals.append(test[i][1])
+    if "\\<const0>" in missedSignals:
+        missedSignals.remove("\\<const0>")
+    if "\\<const1>" in missedSignals:
+        missedSignals.remove("\\<const1>")
+    print(f"Missed {len(missedSignals)} signals out of {len(test)}. See signals_report.txt.")
+    efficiency = round((100-((len(missedSignals) / len(test))*100)),2)
     return(efficiency)
 
 
@@ -271,7 +329,7 @@ def check_diff(paths):
     time_related_data = []
 
     for i in range(2):
-        time_related_data = parse_data(paths, time_related_data, i, False)
+        time_related_data = parse_data(paths, time_related_data, i)
 
     unequivalent_data = {}
     unequivalent_data["name"] = []
@@ -280,11 +338,10 @@ def check_diff(paths):
     unequivalent_data["time"] = []
 
     totals = []
-
     for i in range(2):
         test = []
-        test = parse_data(paths, test, i, True)
-        totals.append(check_tb_effectiveness(test))
+        test = parse_tb_data(paths, test, i)
+        totals.append(check_signals(test[0]))
     
     print(f"Impl TB was {totals[0]}% efficient VS Reversed TB which was {totals[1]}% efficient.")
 
