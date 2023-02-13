@@ -30,6 +30,10 @@ def get_paths(work_dir, tech_lib_path, tb_template_path, path_a, path_b):
     # Path to the diff txt file
     paths["diff"] = paths["build_dir"] / "diff.txt"
 
+    paths["unused_signals"] = []
+    paths["unused_signals"].append(paths["build_dir"] / "unused_signals_impl.txt")
+    paths["unused_signals"].append(paths["build_dir"] / "unused_signals_reversed.txt")
+
     # Paths to the testbench files
     paths["tb"] = []
     paths["tb"].append(paths["build_dir"] / (f"{paths['modules'][1]}_tb.v"))

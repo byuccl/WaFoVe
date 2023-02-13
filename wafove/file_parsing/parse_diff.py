@@ -1,6 +1,7 @@
 """A module used to accurately check the difference between VCD files"""
 
 import logging
+from pathlib import Path
 
 def parse_io(line, input_output, words, new_word):
 
@@ -111,6 +112,8 @@ def check_change(line, data, signals):
     return (False, data)
 
 def inc_change(line, data, signals):
+
+    """Handles incrementing changes on a signal in the dictionary."""
 
     if line[0] == "0" or line[0] == "1":
         if line[1 : len(line) - 1] in signals:
@@ -256,7 +259,7 @@ def append_unequivalent_data(unequivalent_data, data):
             f"{round((((len(signal)-effective)/len(signal))*100),2)}% effective.")
     return unequivalent_data
 
-def check_signals(test):
+def check_signals(paths, j, test):
 
     """Finds the efficiency of a given testbench's set of signals."""
 
@@ -268,8 +271,19 @@ def check_signals(test):
         missedSignals.remove("\\<const0>")
     if "\\<const1>" in missedSignals:
         missedSignals.remove("\\<const1>")
-    print(f"Missed {len(missedSignals)} signals out of {len(test)}. See signals_report.txt.")
+    print(f"Missed {len(missedSignals)} signals out of {len(test)}. See unused_signals.txt.")
+
     efficiency = round((100-((len(missedSignals) / len(test))*100)),2)
+
+    if paths["unused_signals"][j].exists():
+        paths["unused_signals"][j].unlink()
+    with paths["unused_signals"][j].open('x') as file:
+        file.write(f"Number of missed signals: {len(missedSignals)}\n")
+        file.write(f"TB Efficiency: {efficiency}%\n\n")
+        file.write("Missed signals...\n")
+        for signals in missedSignals:
+            file.write(f"{signals}\n")
+    
     return(efficiency)
 
 
@@ -293,7 +307,7 @@ def check_diff(paths):
     for i in range(2):
         test = []
         test = parse_data(paths, test, i, True)
-        totals.append(check_signals(test[0]))
+        totals.append(check_signals(paths, i, test[0]))
     
     print(f"Impl TB was {totals[0]}% efficient VS Reversed TB which was {totals[1]}% efficient.")
 
