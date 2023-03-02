@@ -204,11 +204,11 @@ if __name__ == "__main__":
     user_args = parse_args(package)
 
     path = {}
-
     path = get_paths.get_paths(
         Path(user_args.base),
         Path(user_args.tech),
         Path(user_args.testBench),
+        package / "tools/run_vivado.py",
         Path(user_args.fileA),
         Path(user_args.fileB),
     )

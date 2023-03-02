@@ -16,6 +16,7 @@ class TestCompareWaveforms(unittest.TestCase):
         Path(f"{package}/../out"),
         Path(f"{package}/../third_party/yosys/cells_sim.v"),
         Path(f"{package}/../templates/sample_tb.v"),
+        Path(f"{package}/../tools/run_vivado.py"),
         Path(f"{package}/{folder}/{design_a}"),
         Path(f"{package}/{folder}/{design_b}")
     ))
@@ -68,6 +69,7 @@ class TestCompareWaveforms(unittest.TestCase):
         Path(f"{package}/../out"),
         Path(f"{package}/../third_party/yosys/cells_sim.v"),
         Path(f"{package}/../templates/sample_tb.v"),
+        Path(f"{package}/../tools/run_vivado.py"),
         Path(f"{package}/alu_test/alu_impl.v"),
         Path(f"{package}/calc_test/calc_reversed.v")
     )
@@ -83,6 +85,7 @@ class TestCompareWaveforms(unittest.TestCase):
         Path(f"{package}/../out"),
         Path(""),
         Path(f"{package}/../templates/sample_tb.v"),
+        Path(f"{package}/../tools/run_vivado.py"),
         Path(f"{package}/alu_test/alu_impl.v"),
         Path(f"{package}/alu_test/alu_reversed.v")
     )

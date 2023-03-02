@@ -1,7 +1,7 @@
 """Gets the paths for the waveform comparison tool."""
 
 
-def get_paths(work_dir, tech_lib_path, tb_template_path, path_a, path_b):
+def get_paths(work_dir, tech_lib_path, tb_template_path, run_vivado_path, path_a, path_b):
 
     """A function that gets all of the necessary paths used by the waveform comparison tool."""
 
@@ -15,6 +15,9 @@ def get_paths(work_dir, tech_lib_path, tb_template_path, path_a, path_b):
 
     # Path to the sample testbench used for creating the automatic testbench
     paths["sample_tb"] = tb_template_path
+
+    #Path to the vivado python script
+    paths["vivado"] = run_vivado_path
 
     # Paths to the implicit and reversed netlists
     paths["file"] = []
