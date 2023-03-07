@@ -3,11 +3,9 @@
 
 **Waveform Comparison Tool Installation Instructions**
 
-Use `make` while in the WaFoVe directory.
+Use `pip install setup.py` while in the WaFoVe directory.
 
 **How To Run**
-
-Use the environement created in the make process by running `. ./venv/bin/activate`
 
 usage: `compare_waveforms.py [-h] [-a] [--base BasePath] [--tech TechLib] [-f]
                             [--newTests] [-s SEED] [--testBench TBLocation]
@@ -48,5 +46,4 @@ A few things need to be in place in order for it to work properly:
 * Two verilog netlists being compared must have the same IO ports.
 * The verilog files must be netlists, they cannot be a regular design.
 * A tech-library is required for IVerilog to properly implement their testbenches. (Note: A defualt library is pulled from Yosys during the Make process.)
-* Clocks must be named "clk" at this point. Future implementations for this will be made.
-* The effectiveness of the testbenches is not considered at this time. In the future, tests will be made to show their effectiveness.
+* Clocks must be named "clk" at this point.

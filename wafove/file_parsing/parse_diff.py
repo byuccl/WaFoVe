@@ -237,26 +237,6 @@ def append_unequivalent_data(unequivalent_data, data):
                 index = 0
 
         time = time + 500
-    wasRaised = False
-    index = 0
-    effective = 0
-    print()
-    for i in raised:
-        if i == 1:
-            print(f"{signal[index]} was not raised more than once!")
-            wasRaised = True
-            effective = effective + 1
-        index = index + 1
-    print()
-    if wasRaised is False:
-        print("Testbench raised all IOs")
-    else:
-        for i,j in zip(signal, raised):
-            print(f"{i} was raised {j} time(s)")
-        print()
-        print(
-            f"Testbench's IO mappings were " + 
-            f"{round((((len(signal)-effective)/len(signal))*100),2)}% effective.")
     return unequivalent_data
 
 def check_signals(paths, j, test):
@@ -271,7 +251,7 @@ def check_signals(paths, j, test):
         missedSignals.remove("\\<const0>")
     if "\\<const1>" in missedSignals:
         missedSignals.remove("\\<const1>")
-    print(f"Missed {len(missedSignals)} signals out of {len(test)}. See unused_signals.txt.")
+    logging.info(f"Missed {len(missedSignals)} signals out of {len(test)}.")
 
     efficiency = round((100-((len(missedSignals) / len(test))*100)),2)
 
@@ -307,9 +287,19 @@ def check_diff(paths):
     for i in range(2):
         test = []
         test = parse_data(paths, test, i, True)
-        totals.append(check_signals(paths, i, test[0]))
+        #Check efficiency of both testbenches based upon how many signals are raised.
+        totals.append(check_signals(paths, i, test[0])) 
     
-    print(f"Impl TB was {totals[0]}% efficient VS Reversed TB which was {totals[1]}% efficient.")
+    print(f"\nImpl TB was {totals[0]}% efficient VS Reversed TB which was {totals[1]}% efficient.")
+
+    if((totals[0] < 100.0) & (totals[1] == 100.0)):
+        print("See unused_signals_impl.txt for more info\n")
+    elif((totals[1] < 100.0) & (totals[0] == 100.0)):
+        print("See unused_signals_reversed.txt for more info\n")
+    elif((totals[1] < 100.0) & (totals[0] < 100.0)):
+        print("See both unusued_signals_XXX.txt files for more info\n")
+    else:
+        print("Both files raised all signals successfully.\n")
 
     unequivalent_data = append_unequivalent_data(unequivalent_data, time_related_data)
 
