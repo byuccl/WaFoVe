@@ -74,7 +74,7 @@ def launch_vivado(path, module_a, module_b, commands, root, vivado_bin):
     commands.append(
         [
             "python",
-            str(root / "tools/run_vivado.py"),
+            str(path["vivado"]),
             str(path),
             module_a,
             str(root),
@@ -84,7 +84,7 @@ def launch_vivado(path, module_a, module_b, commands, root, vivado_bin):
     commands.append(
         [
             "python",
-            str(root / "tools/run_vivado.py"),
+            str(path["vivado"]),
             str(path),
             module_b,
             str(root),
