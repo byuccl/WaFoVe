@@ -65,7 +65,7 @@ def init_gtkwave(full_screen):
     return gtkwave
 
 
-def launch_vivado(path, module_a, module_b, commands, root, vivado_bin):
+def launch_vivado(path, module_a, module_b, commands, root, vivado_bin, viv_launcher):
 
     """Checks if the user wants to launch vivado. If so, adds vivado to the list of
     commands to run."""
@@ -74,7 +74,7 @@ def launch_vivado(path, module_a, module_b, commands, root, vivado_bin):
     commands.append(
         [
             "python",
-            str(path["vivado"]),
+            str(viv_launcher),
             str(path),
             module_a,
             str(root),
@@ -84,7 +84,7 @@ def launch_vivado(path, module_a, module_b, commands, root, vivado_bin):
     commands.append(
         [
             "python",
-            str(path["vivado"]),
+            str(viv_launcher),
             str(path),
             module_b,
             str(root),
@@ -94,7 +94,7 @@ def launch_vivado(path, module_a, module_b, commands, root, vivado_bin):
     return commands
 
 
-def analyze_graphs(path, module_a, module_b, root, viv_bin, full_screen):
+def analyze_graphs(path, module_a, module_b, root, viv_launcher, viv_bin, full_screen):
 
     """A function to launch the graphs for designs that have already been tested. Mainly meant
     for checking designs that came back unequivalent to see what was wrong with them."""
@@ -122,7 +122,7 @@ def analyze_graphs(path, module_a, module_b, root, viv_bin, full_screen):
     # Checks if the user wants to compare the gtkwave testbenches with Vivado's simulations,
     # then appends the run_vivado commands to the commands if the user chooses to do so.
     if viv_bin != "none":
-        commands = launch_vivado(path, module_a, module_b, commands, root, viv_bin)
+        commands = launch_vivado(path, module_a, module_b, commands, root, viv_bin, viv_launcher)
 
     # Prints the diff.txt file so the user can see where differences in simulation occured.
     if (path / "diff.txt").exists():

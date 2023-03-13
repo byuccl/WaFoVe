@@ -220,7 +220,8 @@ if __name__ == "__main__":
                 path["build_dir"],
                 path["modules"][1],
                 path["modules"][2],
-                package,
+                package / "tools/run_vivado.py",
+                path["vivado"],
                 user_args.vivado,
                 user_args.fullScreen,
             )
