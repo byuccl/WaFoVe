@@ -208,7 +208,7 @@ if __name__ == "__main__":
         Path(user_args.base),
         Path(user_args.tech),
         Path(user_args.testBench),
-        package / "tools/run_vivado.py",
+        package / "tools",
         Path(user_args.fileA),
         Path(user_args.fileB),
     )
@@ -220,8 +220,7 @@ if __name__ == "__main__":
                 path["build_dir"],
                 path["modules"][1],
                 path["modules"][2],
-                package / "tools/run_vivado.py",
-                path["vivado"],
+                package / "tools",
                 user_args.vivado,
                 user_args.fullScreen,
             )
