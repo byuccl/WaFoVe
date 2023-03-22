@@ -45,5 +45,8 @@ optional arguments:
 A few things need to be in place in order for it to work properly:
 * Two verilog netlists being compared must have the same IO ports.
 * The verilog files must be netlists, they cannot be a regular design.
-* A tech-library is required for IVerilog to properly implement their testbenches. (Note: A defualt library is pulled from Yosys during the Make process.)
-* Clocks must be named "clk" at this point.
+* A tech-library is required for IVerilog to properly implement their testbenches. (Note: A default library is pulled from Yosys during the Make process.)
+* Clocks must be named "clk" at this point. Multi-clock designs are not fully-supported without modifying source code. (See `documentation/Testbench Generation.md` for how to accomplish this.)
+
+**Documentation**
+Full documentation can be found in the `documentation` folder.
