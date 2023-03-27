@@ -3,7 +3,7 @@
 
 **Waveform Comparison Tool Installation Instructions**
 
-Use `pip install setup.py` while in the WaFoVe directory.
+Use `make packages` and `pip install setup.py` while in the WaFoVe directory.
 
 **How To Run**
 
