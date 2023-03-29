@@ -5,7 +5,7 @@ from pathlib import Path
 
 def parse_io(line, input_output, words, new_word):
 
-    """Checks a line for if a word is new or not."""
+    """Parses the 3 components of an IO: The name, the symbol, and the bitsize."""
 
     word = ""
 
@@ -53,7 +53,7 @@ def parse_signals(line):
 
 def past_initial_data(line, data, past_header, all_signals):
 
-    """Parses all of the data at the start of the files to set the initial values for every
+    """Parses all of the data at the start of the file to set the initial values for every
     variable."""
 
     if past_header is True:

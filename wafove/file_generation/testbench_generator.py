@@ -58,6 +58,7 @@ def write_random_state(input_signal, input_number, index, random_list):
 def write_tb_name(paths, tb, is_paren):
 
     """Returns the line with the testbench name included."""
+
     if is_paren:
         line = f"    $dumpvars(1,{paths['modules'][1]}_tb);"
     else:
@@ -110,7 +111,9 @@ def write_outputs(data, tb):
 
 
 def check_clk(data, line):
+
     """Confirms that a clock is not declared as input signal and is set to 0."""
+
     for input_signal in data["input_list"]:
         if input_signal == "clk":
             line = ""
@@ -209,7 +212,9 @@ def generate_testbench(paths, data, i):
                 tb.write(line)
 
 def generate_full_testbench(paths, i):
+
     """Makes a simple change to the testbench so instead of only dumping IOs, it dumps all signals instead."""
+    
     with (paths["tb"][i]).open("r") as tb:
         with (paths["build_dir"] / "temp_tb.v").open("x") as temp:
             for line in tb:

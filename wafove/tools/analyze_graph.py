@@ -1,4 +1,5 @@
 """A tool used to analyze graphs for equivalent/unequivalent data using gtkwave."""
+
 import subprocess
 import argparse
 from subprocess import Popen
@@ -138,6 +139,7 @@ def analyze_graphs(path, module_a, module_b, viv_launcher, viv_bin, full_screen)
     gtkwave.unlink()
 
 def parse_args():
+    
     """Creates the argument parser for the gtkwave launcher."""
 
     parser = argparse.ArgumentParser(description="Launch GTKWave.")

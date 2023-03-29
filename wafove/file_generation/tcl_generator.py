@@ -1,4 +1,5 @@
 """Handles TCL generation that is used by GTKWave for viewing waveforms."""
+
 import logging
 
 def generate_first_tcl(paths, data, i):
