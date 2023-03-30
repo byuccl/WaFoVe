@@ -21,8 +21,8 @@ def generate_vcd(paths, i):
         ]
     )
 
-    subprocess.run(["vvp", str(paths["dsn"])])
-    subprocess.run(["mv", "test.vcd", paths["vcd"][i]])
+    subprocess.run(["vvp", str(paths["dsn"])], cwd=paths["build_dir"])
+    subprocess.run(["mv", "test.vcd", paths["vcd"][i]], cwd=paths["build_dir"])
 
     logging.info(f"The dsn file was successfuly converted into {paths['vcd'][i]}")
 
