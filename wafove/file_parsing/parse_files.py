@@ -19,16 +19,36 @@ def get_data(data, ports):
             data["input_bits_list"].append(len(port.pins) - 1)
     return data
 
+def check_clk(netlist):
+    """An algorithm that will be used for checking if an IO is a clock signal. If it is, it'll be added to a list
+    of clock signals that will be used in the testbench generation process."""
+    #Algorithm for checking clock signals will go here.
+    for l in netlist.libraries:
+        instances = []
+        for i in l.get_instances():
+            instances.append(i)
+        print(instances)
 
-def parse(file):
+def parse(file, is_reversed):
 
     """Uses spydrnet to analyze the netlist and add the names of all inputs, outputs, and their
     respective bit sizes to the data structure."""
 
     netlist = sdn.parse(str(file))
+    #check_clk(netlist)
     library = netlist.libraries[0]
-    definition = library.definitions[0]
-
+    definition = sdn.Definition(None, None)
+    if not is_reversed:
+        if(len(library.definitions) > 1):
+            for i in library.definitions:
+                print(len(i.references))
+                if(len(i.references) == 0):
+                    definition = i
+        else:
+            definition = library.definitions[0]
+    else:
+        definition = library.definitions[0]
+    
     data = {}
     data["output_list"] = []
     data["input_list"] = []
@@ -46,64 +66,12 @@ def parse(file):
         f"with respective bit sizes {data['output_bits_list']}")
     return data
 
-
-def parse_multiple(file, reversed_file):
-
-    """A specific parse function in the situation where multiple verilog files exist. The design
-    has multiple layers of ports, so finding the equivalent ports requires comparing the ports 
-    in each layer to the ports in the reversed_netlist. Once both have the same equivalence, 
-    they are stored."""
-
-    data = {}
-    data["output_list"] = []
-    data["input_list"] = []
-    data["total_list"] = []
-    data["input_bits_list"] = []
-    data["output_bits_list"] = []
-    total_reversed = []
-
-    netlist = sdn.parse(str(reversed_file))
-    library = netlist.libraries[0]
-    definition = library.definitions[0]
-
-    # Stores the reversed_netlist ports in one array.
-    for port in definition.ports:
-        total_reversed.append(port.name)
-
-    netlist = sdn.parse(str(file))
-    library = netlist.libraries[0]
-
-    contains_item = False
-    not_port = False
-
-    for i in library.definitions:
-        for port in i.ports:
-            for item in total_reversed:
-                if item == port.name:
-                    contains_item = True
-            if contains_item is False:
-                not_port = True
-            else:
-                contains_item = False
-        if not_port is False:
-            data = get_data(data, i.ports)
-        else:
-            not_port = False
-    reversed_file.unlink()
-    logging.info(
-        f"Parsed Inputs {data['input_list']} " +  
-        f"with respective bit sizes {data['input_bits_list']}")
-    logging.info(
-        f"Parsed Outputs {data['output_list']} " +  
-        f"with respective bit sizes {data['output_bits_list']}")
-    return data
-
-
 def parse_reversed(paths, i):
 
     """Due to reversed netlists having incomplete ports that can cause issues with spydrnet, this
     function removes all of the excess data the spydrnet doesn't need so that the inputs and outputs 
-    can still be parsed."""
+    can still be parsed. Simply put, this is used to confirm both designs have the same IOs. All internals 
+    for the reversed netlist can be ignored since the clock signals should be consistent across designs."""
 
     with paths["file"][1].open("r") as file:
         if paths["test"].exists():
@@ -124,7 +92,4 @@ def parse_reversed(paths, i):
                         j = 1
                         new_file.write(line)
 
-    if i == 0:
-        return parse_multiple(paths["file"][i], paths["test"])
-
-    return parse(paths["test"])  # Parses this newly-generated simplified netlist.
+    return parse(paths["test"], True)  # Parses this newly-generated simplified netlist.

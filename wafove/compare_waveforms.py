@@ -42,13 +42,13 @@ def generate_files(multiple_files, paths, test_num, seed, all_signals):
                 # file_rewriter.fix_file(paths, i)
                 # Rewrites the files to have correct module names
                 logging.info(f"Parsing first design's signals...")
-                if multiple_files:
+                #if multiple_files:
                     # The logic for how to parse the file depends on whether or not there are
                     # multiple verilog files involved in a design
-                    data = parse_files.parse_reversed(paths, i)
+                    #data = parse_files.parse_reversed(paths, i)
                     # Finds the IO names and bit sizes
-                else:
-                    data = parse_files.parse(file.name)
+                #else:
+                data = parse_files.parse(file.name, False)
 
             if i == 0:
                 logging.info(f"Generating first randomized testbench...")
