@@ -48,7 +48,7 @@ def generate_files(multiple_files, paths, test_num, seed, all_signals):
                     #data = parse_files.parse_reversed(paths, i)
                     # Finds the IO names and bit sizes
                 #else:
-                data = parse_files.parse(file.name, False)
+                data = parse_files.parse(file.name)
 
             if i == 0:
                 logging.info(f"Generating first randomized testbench...")

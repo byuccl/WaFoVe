@@ -19,36 +19,27 @@ def get_data(data, ports):
             data["input_bits_list"].append(len(port.pins) - 1)
     return data
 
+
 def check_clk(netlist):
     """An algorithm that will be used for checking if an IO is a clock signal. If it is, it'll be added to a list
     of clock signals that will be used in the testbench generation process."""
-    #Algorithm for checking clock signals will go here.
+    # Algorithm for checking clock signals will go here.
     for l in netlist.libraries:
         instances = []
         for i in l.get_instances():
             instances.append(i)
         print(instances)
 
-def parse(file, is_reversed):
+
+def parse(file):
 
     """Uses spydrnet to analyze the netlist and add the names of all inputs, outputs, and their
     respective bit sizes to the data structure."""
+    print("Parsing")
 
     netlist = sdn.parse(str(file))
-    #check_clk(netlist)
-    library = netlist.libraries[0]
-    definition = sdn.Definition(None, None)
-    if not is_reversed:
-        if(len(library.definitions) > 1):
-            for i in library.definitions:
-                print(len(i.references))
-                if(len(i.references) == 0):
-                    definition = i
-        else:
-            definition = library.definitions[0]
-    else:
-        definition = library.definitions[0]
-    
+    definition = netlist.top_instance.reference
+
     data = {}
     data["output_list"] = []
     data["input_list"] = []
@@ -59,18 +50,21 @@ def parse(file, is_reversed):
     # Use design.yaml_path to find yaml file. Read to find if more modules exist.
     data = get_data(data, definition.ports)
     logging.info(
-        f"Parsed Inputs {data['input_list']} " +
-        f"with respective bit sizes {data['input_bits_list']}")
+        f"Parsed Inputs {data['input_list']} "
+        + f"with respective bit sizes {data['input_bits_list']}"
+    )
     logging.info(
-        f"Parsed Outputs {data['output_list']} " + 
-        f"with respective bit sizes {data['output_bits_list']}")
+        f"Parsed Outputs {data['output_list']} "
+        + f"with respective bit sizes {data['output_bits_list']}"
+    )
     return data
+
 
 def parse_reversed(paths, i):
 
     """Due to reversed netlists having incomplete ports that can cause issues with spydrnet, this
-    function removes all of the excess data the spydrnet doesn't need so that the inputs and outputs 
-    can still be parsed. Simply put, this is used to confirm both designs have the same IOs. All internals 
+    function removes all of the excess data the spydrnet doesn't need so that the inputs and outputs
+    can still be parsed. Simply put, this is used to confirm both designs have the same IOs. All internals
     for the reversed netlist can be ignored since the clock signals should be consistent across designs."""
 
     with paths["file"][1].open("r") as file:
@@ -92,4 +86,4 @@ def parse_reversed(paths, i):
                         j = 1
                         new_file.write(line)
 
-    return parse(paths["test"], True)  # Parses this newly-generated simplified netlist.
+    return parse(paths["test"])  # Parses this newly-generated simplified netlist.
