@@ -14,7 +14,7 @@ from wafove.templates import get_paths
 from wafove.tools import analyze_graph
 
 
-def generate_files(multiple_files, paths, test_num, seed, all_signals):
+def generate_files(paths, test_num, seed, all_signals):
     """The main function that generates testbenches and TCL files. It begins by calling the
     parsers for the input & output names, then
     it calls the testbench generators, finally it calls the TCL generators. It then increments
@@ -27,54 +27,45 @@ def generate_files(multiple_files, paths, test_num, seed, all_signals):
         shutil.copyfile(
             paths["file"][i], Path(f"{paths['build_dir']/paths['modules'][i+1]}.v")
         )
-        with open(paths["file"][i], "r") as file:
-            logging.info(f"Generating files for module #{i+1}...")
+        logging.info(f"Generating files for module #{i+1}...")
 
-            if i == 1:
-                # file_rewriter.fix_file(paths, i)
-                # Rewrites the files to have correct module names
-                logging.info(f"Parsing second design's signals...")
-                data = parse_files.parse_reversed(paths, i)
-                # Finds the IO names and bit sizes
-                paths["test"].unlink()  # Gets rid of the test.v file
+        if i == 1:
+            # Rewrites the files to have correct module names
+            logging.info(f"Parsing second design's signals...")
+            data = parse_files.parse_reversed(paths, i)
+            # Finds the IO names and bit sizes
+            paths["test"].unlink()  # Gets rid of the test.v file
 
-            else:
-                # file_rewriter.fix_file(paths, i)
-                # Rewrites the files to have correct module names
-                logging.info(f"Parsing first design's signals...")
-                #if multiple_files:
-                    # The logic for how to parse the file depends on whether or not there are
-                    # multiple verilog files involved in a design
-                    #data = parse_files.parse_reversed(paths, i)
-                    # Finds the IO names and bit sizes
-                #else:
-                data = parse_files.parse(file.name)
+        else:
+            # Rewrites the files to have correct module names
+            logging.info(f"Parsing first design's signals...")
+            data = parse_files.parse(paths["file"][i])
 
-            if i == 0:
-                logging.info(f"Generating first randomized testbench...")
-                # Create the initial testbench with randomized inputs for all input ports
-                # (based upon bit-size)
-                testbench_generator.generate_first_testbench(paths, test_num, data, i, seed)
-            else:  # Build off of the old testbench to keep the same randomized values
-                logging.info(f"Generating second testbench based upon first's signals...")
-                testbench_generator.generate_testbench(paths, data, i)
-            if all_signals:
-                logging.info(f"Appending testbenchs to show all signals...")
-                testbench_generator.generate_full_testbench(paths, i)
-            if i == 0:
-                logging.info(f"Generating first TCL script for gtkwave...")
-                tcl_generator.generate_first_tcl(paths, data, i)
-                # The first TCL will be generated based upon the IO port names
-            else:
-                logging.info(f"Generating second TCL script for gtkwave...")
-                tcl_generator.generate_tcl(paths, i)
-                # The second TCL just needs to change module names from the first one
+        if i == 0:
+            logging.info(f"Generating first randomized testbench...")
+            # Create the initial testbench with randomized inputs for all input ports
+            # (based upon bit-size)
+            testbench_generator.generate_first_testbench(paths, test_num, data, i, seed)
+        else:  # Build off of the old testbench to keep the same randomized values
+            logging.info(f"Generating second testbench based upon first's signals...")
+            testbench_generator.generate_testbench(paths, data, i)
+        if all_signals:
+            logging.info(f"Appending testbenchs to show all signals...")
+            testbench_generator.generate_full_testbench(paths, i)
+        if i == 0:
+            logging.info(f"Generating first TCL script for gtkwave...")
+            tcl_generator.generate_first_tcl(paths, data, i)
+            # The first TCL will be generated based upon the IO port names
+        else:
+            logging.info(f"Generating second TCL script for gtkwave...")
+            tcl_generator.generate_tcl(paths, i)
+            # The second TCL just needs to change module names from the first one
 
-            logging.info(f"Generating VCD file...")
-            waveform_generator.generate_vcd(paths, i)
-            # All previously generated files are ran through Icarus and then GTKwave, creating
-            # the files we need.
-            logging.info(f"Successfully ran generation processes on module #{i+1}\n\n")
+        logging.info(f"Generating VCD file...")
+        waveform_generator.generate_vcd(paths, i)
+        # All previously generated files are ran through Icarus and then GTKwave, creating
+        # the files we need.
+        logging.info(f"Successfully ran generation processes on module #{i+1}\n\n")
     logging.info(f"Successfully finished all generation processes\n\n")
 
 
@@ -239,7 +230,7 @@ if __name__ == "__main__":
     ):
         print("No tests exist. Defaulting to create new testbenches.")
 
-    generate_files(True, path, user_args.tests, user_args.seed, user_args.allSignals)
+    generate_files(path, user_args.tests, user_args.seed, user_args.allSignals)
     if run_test(path) is True:
         print("Designs are equivalent!")
     else:

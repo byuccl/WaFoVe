@@ -35,7 +35,6 @@ def parse(file):
 
     """Uses spydrnet to analyze the netlist and add the names of all inputs, outputs, and their
     respective bit sizes to the data structure."""
-    print("Parsing")
 
     netlist = sdn.parse(str(file))
     definition = netlist.top_instance.reference
