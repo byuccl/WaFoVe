@@ -38,13 +38,13 @@ def generate_random(data, random_list, test_num):
     return random_list
 
 
-def write_random_state(input_signal, input_number, index, random_list):
+def write_random_state(input_signal, input_number, index, random_list, clocks):
 
     """Writes the current state for the random number."""
 
     line = ""
 
-    if input_signal != "clk":
+    if input_signal not in clocks:
         if input_number == 0:
             line = f"       # 2000 {input_signal} = {random_list[input_number][index]};\n"
         else:
@@ -88,11 +88,11 @@ def write_inputs(data, tb):
     for signal_in, bits in zip(data["input_list"], data["input_bits_list"]):
         signal_in = str(signal_in)
         bits = str(bits)
-        if signal_in != "clk":
+        if signal_in not in data["clk"]:
             line = f"reg [{bits}:0] {signal_in} = 0;\n"
             tb.write(line)
         else:
-            line = "reg clk = 0;\n"
+            line = f"reg {signal_in} = 0;\n"
             tb.write(line)
         line = ""
     return ""
@@ -108,16 +108,17 @@ def write_outputs(data, tb):
         line = f"wire [{bits}:0] {signal_out};\n"
         tb.write(line)
     return ""
+    
 
+def set_clk(data, tb, line):
 
-def check_clk(data, line):
+    """Alternates a clock between on and off."""
 
-    """Confirms that a clock is not declared as input signal and is set to 0."""
-
-    for input_signal in data["input_list"]:
-        if input_signal == "clk":
-            line = ""
-    return line
+    if data["clk"]:
+        for clk in data["clk"]:
+            tb.write(f"always #500 {clk} = !{clk};\n")
+        return ""
+    return(line)
 
 
 def write_random_lines(data, test_num, random_list, tb):
@@ -129,7 +130,7 @@ def write_random_lines(data, test_num, random_list, tb):
         for input_signal, input_number in zip(
             data["input_list"], range(input_num(data))
         ):
-            line = write_random_state(input_signal, input_number, j, random_list)
+            line = write_random_state(input_signal, input_number, j, random_list, data["clk"])
             tb.write(line)
             line = ""
         tb.write("\n")
@@ -156,7 +157,11 @@ def parse_line(line, data, tb, test_num, paths, random_list):
         line = write_module_name(paths, data)
 
     if "reg clk = 0;" in line:
-        line = check_clk(data, line)
+        if data["clk"]:
+            line = ""
+
+    if "always #500 clk = !clk;" in line:
+        line = set_clk(data, tb, line)
 
     if "/*SIGNALS" in line:
         line = write_random_lines(data, test_num, random_list, tb)

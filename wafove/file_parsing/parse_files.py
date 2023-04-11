@@ -19,24 +19,30 @@ def get_data(data, ports):
             data["input_bits_list"].append(len(port.pins) - 1)
     return data
 
-
 def check_clk(netlist):
-    """An algorithm that will be used for checking if an IO is a clock signal. If it is, it'll be added to a list
-    of clock signals that will be used in the testbench generation process."""
-    # Algorithm for checking clock signals will go here.
-    for l in netlist.libraries:
-        instances = []
-        for i in l.get_instances():
-            instances.append(i)
-        print(instances)
 
+    """Finds clock signals declared in a netlist."""
+
+    clk_signals = []
+
+    for i in netlist.get_instances():
+        if "BUFG" in i.reference.name:
+            #This logic only checks for BUFG definitions. Other types of BUFGs can be included.
+
+            if "IBUF" in i.name:
+                clk_signals.append(i.name[0:i.name.index("_IBUF_BUFG_inst")])
+            else:
+                clk_signals.append(i.name[0:i.name.index("_BUFG_inst")])
+
+    return(clk_signals)
 
 def parse(file):
 
     """Uses spydrnet to analyze the netlist and add the names of all inputs, outputs, and their
     respective bit sizes to the data structure."""
-
     netlist = sdn.parse(str(file))
+
+    definition = sdn.Definition
     definition = netlist.top_instance.reference
 
     data = {}
@@ -45,6 +51,7 @@ def parse(file):
     data["total_list"] = []
     data["input_bits_list"] = []
     data["output_bits_list"] = []
+    data["clk"] = check_clk(netlist)
 
     # Use design.yaml_path to find yaml file. Read to find if more modules exist.
     data = get_data(data, definition.ports)
