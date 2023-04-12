@@ -19,22 +19,45 @@ def get_data(data, ports):
             data["input_bits_list"].append(len(port.pins) - 1)
     return data
 
-def check_clk(netlist):
+def spy_clk(netlist):
 
-    """Finds clock signals declared in a netlist."""
+    """Checks if the design uses a clock signal or not"""
 
-    clk_signals = []
+    clk_exists = False
 
     for i in netlist.get_instances():
         if "BUFG" in i.reference.name:
-            #This logic only checks for BUFG definitions. Other types of BUFGs can be included.
+            clk_exists = True
+    
+    if clk_exists:
+        return(find_bufg(netlist))
 
-            if "IBUF" in i.name:
-                clk_signals.append(i.name[0:i.name.index("_IBUF_BUFG_inst")])
-            else:
-                clk_signals.append(i.name[0:i.name.index("_BUFG_inst")])
+    return([])
 
-    return(clk_signals)
+def find_bufg(netlist):
+
+    """Finds which top-level ports connect to a BUFG and adds them to a list of clocks.
+        Assumes that there is at most one instance between the top level port and the BUFG."""
+
+    clocks = []
+    instance = netlist.top_instance
+    for port in instance.get_ports():
+        for pin in port.pins:
+            if isinstance(pin, sdn.InnerPin):
+                wire = pin.wire
+                for pin2 in wire.pins:
+                    if isinstance(pin2, sdn.OuterPin):
+                        if "BUFG" in pin2.instance.reference.name:
+                            clocks.append(port.name)
+                        #Continues in case an IBUF exists between the top port and the BUFG
+                        out_pin = [p for p in pin2.instance.pins if 
+                        p.inner_pin.port.name == "O"][0]
+                        wire2 = out_pin.wire
+                        for pin3 in wire2.pins:
+                            if isinstance(pin3, sdn.OuterPin):
+                                if "BUFG" in pin3.instance.reference.name:
+                                    clocks.append(port.name)
+    return(clocks)
 
 def parse(file):
 
@@ -51,7 +74,7 @@ def parse(file):
     data["total_list"] = []
     data["input_bits_list"] = []
     data["output_bits_list"] = []
-    data["clk"] = check_clk(netlist)
+    data["clk"] = spy_clk(netlist)
 
     # Use design.yaml_path to find yaml file. Read to find if more modules exist.
     data = get_data(data, definition.ports)
