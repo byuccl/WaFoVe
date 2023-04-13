@@ -19,19 +19,15 @@ def get_data(data, ports):
             data["input_bits_list"].append(len(port.pins) - 1)
     return data
 
-def spy_clk(netlist):
+def check_clk(netlist):
 
     """Checks if the design uses a clock signal or not"""
-
-    clk_exists = False
-
+    
+    #Checks if BUFGs exist in the design in the first place. If they don't, there is no need to check which IO is a clock.
     for i in netlist.get_instances():
         if "BUFG" in i.reference.name:
-            clk_exists = True
-    
-    if clk_exists:
-        return(find_bufg(netlist))
-
+            return(find_bufg(netlist))
+        
     return([])
 
 def find_bufg(netlist):
@@ -41,22 +37,25 @@ def find_bufg(netlist):
 
     clocks = []
     instance = netlist.top_instance
+
     for port in instance.get_ports():
-        for pin in port.pins:
-            if isinstance(pin, sdn.InnerPin):
-                wire = pin.wire
-                for pin2 in wire.pins:
-                    if isinstance(pin2, sdn.OuterPin):
-                        if "BUFG" in pin2.instance.reference.name:
-                            clocks.append(port.name)
-                        #Continues in case an IBUF exists between the top port and the BUFG
-                        out_pin = [p for p in pin2.instance.pins if 
-                        p.inner_pin.port.name == "O"][0]
-                        wire2 = out_pin.wire
-                        for pin3 in wire2.pins:
-                            if isinstance(pin3, sdn.OuterPin):
-                                if "BUFG" in pin3.instance.reference.name:
-                                    clocks.append(port.name)
+
+        for pin in filter(lambda p: isinstance(p, sdn.InnerPin), port.pins):
+            wire = pin.wire
+
+            for pin2 in filter(lambda p: isinstance(p, sdn.OuterPin), wire.pins):
+                if "BUFG" in pin2.instance.reference.name:
+                    clocks.append(port.name)
+                    continue
+
+                #Continues in case an IBUF exists between the top port and the BUFG
+                out_pin = [p for p in pin2.instance.pins if p.inner_pin.port.name == "O"][0]
+                wire2 = out_pin.wire
+
+                for pin3 in filter(lambda p: isinstance(p, sdn.OuterPin), wire2.pins):
+                    if "BUFG" in pin3.instance.reference.name:
+                        clocks.append(port.name)
+
     return(clocks)
 
 def parse(file):
@@ -74,7 +73,7 @@ def parse(file):
     data["total_list"] = []
     data["input_bits_list"] = []
     data["output_bits_list"] = []
-    data["clk"] = spy_clk(netlist)
+    data["clk"] = check_clk(netlist)
 
     # Use design.yaml_path to find yaml file. Read to find if more modules exist.
     data = get_data(data, definition.ports)
