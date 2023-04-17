@@ -3,35 +3,6 @@
 import logging
 from pathlib import Path
 
-def parse_io(line, input_output, words, new_word):
-
-    """Parses the 3 components of an IO: The name, the symbol, and the bitsize."""
-
-    word = ""
-
-    for i in line:
-
-        if i == " ":
-            new_word = True
-
-        if new_word is False:
-            word = word + i
-
-        else:
-
-            if word not in ("$var", input_output):
-
-                if len(words)!=3:
-                    words.append(word)
-                word = ""
-                new_word = False
-
-            else:
-                word = ""
-                new_word = False
-
-    return words
-
 
 def parse_signals(line):
 
@@ -39,57 +10,84 @@ def parse_signals(line):
     symbol, and it's bitsize."""
 
     words = []
-    new_word = False
 
-    if "$var wire" in line:
-        #These are the outputs in VCD format
-        words = parse_io(line, "wire", words, new_word)
+    if "$var" in line:
 
-    if "$var reg" in line:
-        #These are the inputs in VCD format
-        words = parse_io(line, "reg", words, new_word)
+        word = ""
+
+        for i in line:
+            if (i == " ") & (word != "$var"):
+                if ("$var" not in word) & (len(words) != 3):
+                    words.append(word)
+                word = ""
+
+            else:
+                word = word + i
+
     return words
+
+
+def parse_selected_signals(line, data):
+    """Parses only the signals that are considered IOs in a design."""
+
+    if "$dumpvars" in line or "$scope module instanceOf $end" in line:
+        return True, data
+
+    if (
+        "$upscope" not in line
+        and "$enddefinitions" not in line
+        and "#0" not in line
+        and "$scope module instanceOf $end" not in line
+    ):
+        found_data = parse_signals(line)
+
+        if found_data:
+            if found_data[0] == "1":
+                data["name"].append(found_data[2])
+                data["signal"].append(found_data[1])
+            else:
+                data["name"].append(found_data[2])
+                data["signal"].append(found_data[1])
+
+    return False, data
+
+
+def parse_all_signals(line, data):
+    """Parses all signals from a design, including internal components such as IBUFs"""
+
+    if "$dumpvars" in line or "$scope module" in line:
+        if "$scope module instanceOf $end" not in line:
+            return True, data
+
+    if (
+        "$upscope" not in line
+        and "$enddefinitions" not in line
+        and "#0" not in line
+        and "$scope module instanceOf $end" not in line
+    ):
+        found_data = parse_signals(line)
+
+        if found_data:
+            data[found_data[1]] = (found_data[1], found_data[2], 0)
+
+    return False, data
 
 
 def past_initial_data(line, data, past_header, all_signals):
 
-    """Parses all of the data at the start of the file to set the initial values for every
-    variable."""
+    """Parses all of the data at the start of the file
+    to set the initial values for every variable."""
 
-    if past_header is True:
-
-        if all_signals is False:
-            if "$dumpvars" in line or "$scope module instanceOf $end" in line:
-                return (True, data)
+    if past_header:
+        if all_signals:
+            return parse_all_signals(line, data)
         else:
-            if "$dumpvars" in line or "$scope module" in line:
-                if "$scope module instanceOf $end" not in line:
-                    return(True, data)
-
-        if (
-            "$upscope" not in line
-            and "$enddefinitions" not in line
-            and "#0" not in line 
-            and "$scope module instanceOf $end" not in line
-        ):
-            found_data = parse_signals(line)
-
-            if found_data:
-                if not all_signals:
-                    if found_data[0] == "1":
-                        data["name"].append(found_data[2])
-                        data["signal"].append(found_data[1])
-                    else:
-                        data["name"].append(found_data[2])
-                        data["signal"].append(found_data[1])
-                else:
-                    data[found_data[1]] = (found_data[1], found_data[2], 0)
-
+            return parse_selected_signals(line, data)
     else:
         if "$scope module" in line:
-            return (True, data)
+            return True, data
 
-    return (False, data)
+    return False, data
 
 
 def check_change(line, data, signals):
@@ -111,6 +109,7 @@ def check_change(line, data, signals):
 
     return (False, data)
 
+
 def inc_change(line, data, signals):
 
     """Handles incrementing changes on a signal in the dictionary."""
@@ -127,8 +126,9 @@ def inc_change(line, data, signals):
 
     elif line[0] == "#":
         return data
-    
-    return(data)
+
+    return data
+
 
 def inc_tb_change(line, signals):
 
@@ -140,14 +140,14 @@ def inc_tb_change(line, signals):
             signals[key] = (signals[key][0], signals[key][1], signals[key][2] + 1)
 
     elif " " in line:
-        key = line[line.index(" ") + 1 : len(line) - 1 ]
+        key = line[line.index(" ") + 1 : len(line) - 1]
         if key in signals:
             signals[key] = (signals[key][0], signals[key][1], signals[key][2] + 1)
 
     elif line[0] == "#":
         return signals
-    
-    return(signals)
+
+    return signals
 
 
 def parse_line(line, data, monitor, all_signals):
@@ -229,7 +229,8 @@ def append_unequivalent_data(unequivalent_data, data):
                 unequivalent_data["rev"].append(r_sig)
                 unequivalent_data["time"].append((time) / 1000)
                 logging.debug(
-                    f"[{data[0]['name'][index]}] unequivalent at time {int(time / 1000)}us")
+                    f"[{data[0]['name'][index]}] unequivalent at time {int(time / 1000)}us"
+                )
 
             index = index + 1
 
@@ -239,13 +240,14 @@ def append_unequivalent_data(unequivalent_data, data):
         time = time + 500
     return unequivalent_data
 
+
 def check_signals(paths, j, test):
 
     """Finds the efficiency of a given testbench's set of signals."""
 
     missedSignals = []
     for i in test:
-        if(test[i][2] == 1) | (test[i][2] == 0):
+        if (test[i][2] == 1) | (test[i][2] == 0):
             missedSignals.append(test[i][1])
     if "\\<const0>" in missedSignals:
         missedSignals.remove("\\<const0>")
@@ -253,18 +255,18 @@ def check_signals(paths, j, test):
         missedSignals.remove("\\<const1>")
     logging.info(f"Missed {len(missedSignals)} signals out of {len(test)}.")
 
-    efficiency = round((100-((len(missedSignals) / len(test))*100)),2)
+    efficiency = round((100 - ((len(missedSignals) / len(test)) * 100)), 2)
 
     if paths["unused_signals"][j].exists():
         paths["unused_signals"][j].unlink()
-    with paths["unused_signals"][j].open('x') as file:
+    with paths["unused_signals"][j].open("x") as file:
         file.write(f"Number of missed signals: {len(missedSignals)}\n")
         file.write(f"TB Efficiency: {efficiency}%\n\n")
         file.write("Missed signals...\n")
         for signals in missedSignals:
             file.write(f"{signals}\n")
-    
-    return(efficiency)
+
+    return efficiency
 
 
 def check_diff(paths):
@@ -287,16 +289,16 @@ def check_diff(paths):
     for i in range(2):
         test = []
         test = parse_data(paths, test, i, True)
-        #Check efficiency of both testbenches based upon how many signals are raised.
-        totals.append(check_signals(paths, i, test[0])) 
-    
+        # Check efficiency of both testbenches based upon how many signals are raised.
+        totals.append(check_signals(paths, i, test[0]))
+
     print(f"\nImpl TB was {totals[0]}% efficient VS Reversed TB which was {totals[1]}% efficient.")
 
-    if((totals[0] < 100.0) & (totals[1] == 100.0)):
+    if (totals[0] < 100.0) & (totals[1] == 100.0):
         print("See unused_signals_impl.txt for more info\n")
-    elif((totals[1] < 100.0) & (totals[0] == 100.0)):
+    elif (totals[1] < 100.0) & (totals[0] == 100.0):
         print("See unused_signals_reversed.txt for more info\n")
-    elif((totals[1] < 100.0) & (totals[0] < 100.0)):
+    elif (totals[1] < 100.0) & (totals[0] < 100.0):
         print("See both unusued_signals_XXX.txt files for more info\n")
     else:
         print("Both files raised all signals successfully.\n")
@@ -307,7 +309,7 @@ def check_diff(paths):
     # in the design
     logging.info("Finished comparing VCD files\n")
     logging.info("Returning results...")
-    
+
     if len(unequivalent_data["impl"]) > 0:
         total = 0
 
@@ -328,14 +330,10 @@ def check_diff(paths):
                 unequivalent_data["time"],
             ):
 
-                output.write(
-                    f"{time}us, Signal {name}, Impl {impl}, Reversed {rev}\n\n"
-                )
+                output.write(f"{time}us, Signal {name}, Impl {impl}, Reversed {rev}\n\n")
                 total = total + 1
 
-            output.write(
-                f"\nThere are {total} total lines where these waveforms are unequivalent"
-            )
+            output.write(f"\nThere are {total} total lines where these waveforms are unequivalent")
 
         print(f"See {paths['diff']} for more info")
 
