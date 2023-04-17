@@ -3,93 +3,99 @@
 import logging
 from pathlib import Path
 
-def parse_io(line, input_output, words, new_word):
-
+def parse_io(line, input_output):
     """Parses the 3 components of an IO: The name, the symbol, and the bitsize."""
 
+    words = []
     word = ""
+    new_word = False
 
     for i in line:
-
         if i == " ":
-            new_word = True
-
-        if new_word is False:
-            word = word + i
-
-        else:
-
-            if word not in ("$var", input_output):
-
-                if len(words)!=3:
+            if word:
+                if word not in ("$var", input_output):
                     words.append(word)
+                    if len(words) == 3:
+                        return words
                 word = ""
-                new_word = False
+                new_word = True
+        elif new_word:
+            if word not in ("$var", input_output):
+                words.append(word)
+                if len(words) == 3:
+                    return words
+            word = i
+            new_word = False
+        else:
+            word += i
 
-            else:
-                word = ""
-                new_word = False
+    if word and word not in ("$var", input_output):
+        words.append(word)
 
     return words
 
 
 def parse_signals(line):
-
     """Is used in the header of a VCD file to find the names of every signal, it's corresponding
     symbol, and it's bitsize."""
 
-    words = []
-    new_word = False
-
     if "$var wire" in line:
         #These are the outputs in VCD format
-        words = parse_io(line, "wire", words, new_word)
+        return parse_io(line, "wire")
 
     if "$var reg" in line:
         #These are the inputs in VCD format
-        words = parse_io(line, "reg", words, new_word)
-    return words
+        return parse_io(line, "reg")
+    
+    return []
 
+def parse_selected_signals(line, data):
+    """Parses only the signals that are considered IOs in a design."""
+
+    if "$dumpvars" in line or "$scope module instanceOf $end" in line:
+        return True, data
+
+    if "$upscope" not in line and "$enddefinitions" not in line and "#0" not in line and "$scope module instanceOf $end" not in line:
+        found_data = parse_signals(line)
+
+        if found_data:
+            if found_data[0] == "1":
+                data["name"].append(found_data[2])
+                data["signal"].append(found_data[1])
+            else:
+                data["name"].append(found_data[2])
+                data["signal"].append(found_data[1])
+
+    return False, data
+
+def parse_all_signals(line, data):
+    """Parses all signals from a design, including internal components such as IBUFs"""
+
+    if "$dumpvars" in line or "$scope module" in line:
+        if "$scope module instanceOf $end" not in line:
+            return True, data
+
+    if "$upscope" not in line and "$enddefinitions" not in line and "#0" not in line and "$scope module instanceOf $end" not in line:
+        found_data = parse_signals(line)
+
+        if found_data:
+            data[found_data[1]] = (found_data[1], found_data[2], 0)
+
+    return False, data
 
 def past_initial_data(line, data, past_header, all_signals):
+    """Parses all of the data at the start of the file to set the initial values for every variable."""
 
-    """Parses all of the data at the start of the file to set the initial values for every
-    variable."""
-
-    if past_header is True:
-
-        if all_signals is False:
-            if "$dumpvars" in line or "$scope module instanceOf $end" in line:
-                return (True, data)
+    if past_header:
+        if all_signals:
+            return parse_all_signals(line, data)
         else:
-            if "$dumpvars" in line or "$scope module" in line:
-                if "$scope module instanceOf $end" not in line:
-                    return(True, data)
-
-        if (
-            "$upscope" not in line
-            and "$enddefinitions" not in line
-            and "#0" not in line 
-            and "$scope module instanceOf $end" not in line
-        ):
-            found_data = parse_signals(line)
-
-            if found_data:
-                if not all_signals:
-                    if found_data[0] == "1":
-                        data["name"].append(found_data[2])
-                        data["signal"].append(found_data[1])
-                    else:
-                        data["name"].append(found_data[2])
-                        data["signal"].append(found_data[1])
-                else:
-                    data[found_data[1]] = (found_data[1], found_data[2], 0)
-
+            return parse_selected_signals(line, data)
     else:
         if "$scope module" in line:
-            return (True, data)
+            return True, data
 
-    return (False, data)
+    return False, data
 
 
 def check_change(line, data, signals):

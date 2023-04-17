@@ -5,7 +5,6 @@ import logging
 
 
 def get_data(data, ports):
-
     """Finds all of the IO ports in the netlist and stores them in data."""
 
     for port in ports:
@@ -20,21 +19,21 @@ def get_data(data, ports):
     return data
 
 def check_clk(netlist):
-
     """Checks if the design uses a clock signal or not"""
     
-    #Checks if BUFGs exist in the design in the first place. If they don't, there is no need to check which IO is a clock.
-    for i in netlist.get_instances():
-        if "BUFG" in i.reference.name:
-            return(find_bufg(netlist))
+    # Checks if BUFGs exist in the design in the first place. 
+    # If they don't, there is no need to check which IO is a clock.
+    for instance in netlist.get_instances():
+        if "BUFG" in instance.reference.name:
+            return find_clocks(netlist)
         
-    return([])
+    return []
 
-def find_bufg(netlist):
+def find_clocks(netlist):
+    """Finds which top-level ports connect to clock instances and adds them to a list of clocks.
+    Assumes that there is at most one instance between the top level port and the clock."""
 
-    """Finds which top-level ports connect to a BUFG and adds them to a list of clocks.
-        Assumes that there is at most one instance between the top level port and the BUFG."""
-
+    clock_names = ["BUFG", "BUFH", "BUFIO", "BUFM", "BUFR"]
     clocks = []
     instance = netlist.top_instance
 
@@ -44,24 +43,28 @@ def find_bufg(netlist):
             wire = pin.wire
 
             for pin2 in filter(lambda p: isinstance(p, sdn.OuterPin), wire.pins):
-                if "BUFG" in pin2.instance.reference.name:
+                instance_name = pin2.instance.reference.name
+
+                if any(name in instance_name for name in clock_names):
                     clocks.append(port.name)
                     continue
 
-                #Continues in case an IBUF exists between the top port and the BUFG
+                # Continues in case an IBUF exists between the top port and the clock
                 out_pin = [p for p in pin2.instance.pins if p.inner_pin.port.name == "O"][0]
                 wire2 = out_pin.wire
 
                 for pin3 in filter(lambda p: isinstance(p, sdn.OuterPin), wire2.pins):
-                    if "BUFG" in pin3.instance.reference.name:
+                    instance_name = pin3.instance.reference.name
+
+                    if any(name in instance_name for name in clock_names):
                         clocks.append(port.name)
 
-    return(clocks)
+    return clocks
 
 def parse(file):
-
     """Uses spydrnet to analyze the netlist and add the names of all inputs, outputs, and their
     respective bit sizes to the data structure."""
+
     netlist = sdn.parse(str(file))
 
     definition = sdn.Definition
@@ -89,7 +92,6 @@ def parse(file):
 
 
 def parse_reversed(paths, i):
-
     """Due to reversed netlists having incomplete ports that can cause issues with spydrnet, this
     function removes all of the excess data the spydrnet doesn't need so that the inputs and outputs
     can still be parsed. Simply put, this is used to confirm both designs have the same IOs. All internals
