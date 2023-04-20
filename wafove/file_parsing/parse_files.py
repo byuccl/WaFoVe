@@ -20,16 +20,21 @@ def get_data(data, ports):
 
 def check_clk(netlist):
     """Checks if the design uses a clock signal or not"""
+    clock_names = ["BUFG", "BUFH", "BUFIO", "BUFM", "BUFR"]
+    num_bufgs = 0
     
     # Checks if BUFGs exist in the design in the first place. 
     # If they don't, there is no need to check which IO is a clock.
     for instance in netlist.get_instances():
-        if "BUFG" in instance.reference.name:
-            return find_clocks(netlist)
-        
+        if any(name in instance.reference.name for name in clock_names):
+            num_bufgs = num_bufgs + 1
+    if num_bufgs:
+        logging.info(f"Found {num_bufgs} clock instance(s)")
+        return find_clocks(netlist, num_bufgs)
+    logging.info(f"Found no clock instances in design.")
     return []
 
-def find_clocks(netlist):
+def find_clocks(netlist, num_bufgs):
     """Finds which top-level ports connect to clock instances and adds them to a list of clocks.
     Assumes that there is at most one instance between the top level port and the clock."""
 
@@ -58,7 +63,8 @@ def find_clocks(netlist):
 
                     if any(name in instance_name for name in clock_names):
                         clocks.append(port.name)
-
+    if num_bufgs != len(clocks):
+        print(f"Warning: {num_bufgs - len(clocks)} missed.")
     return clocks
 
 def parse(file):
