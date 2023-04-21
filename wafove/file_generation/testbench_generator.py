@@ -113,10 +113,16 @@ def write_outputs(data, tb):
 def set_clk(data, tb, line):
 
     """Alternates a clock between on and off."""
+    i=0
 
     if data["clk"]:
         for clk in data["clk"]:
-            tb.write(f"always #500 {clk} = !{clk};\n")
+            if i == 0:
+                tb.write(f"always #500 {clk} = !{clk};\n")
+            else:
+                inc = random.randrange(250, 1500, 250)
+                tb.write(f"always #{inc} {clk} = !{clk};\n")
+            i=i+1
         return ""
     return(line)
 
