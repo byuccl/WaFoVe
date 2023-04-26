@@ -209,10 +209,15 @@ def append_unequivalent_data(unequivalent_data, data):
     signal = []
     raised = []
     last_val = []
+    total = 0
+    total_raised = 0
 
     for impl, rev in zip(data[0]["state"], data[1]["state"]):
 
         for i_sig, r_sig in zip(impl, rev):
+
+            total = total + 1
+
             if data[0]["name"][index] not in signal:
                 signal.append(data[0]["name"][index])
                 raised.append(1)
@@ -224,6 +229,9 @@ def append_unequivalent_data(unequivalent_data, data):
                     last_val[name] = i_sig
 
             if i_sig != r_sig:
+
+                total_raised = total_raised + 1
+
                 unequivalent_data["name"].append(data[0]["name"][index])
                 unequivalent_data["impl"].append(i_sig)
                 unequivalent_data["rev"].append(r_sig)
@@ -238,6 +246,9 @@ def append_unequivalent_data(unequivalent_data, data):
                 index = 0
 
         time = time + 500
+
+    print(f"{((total-total_raised) / total) * 100}% similarity between netlists.\n")
+
     return unequivalent_data
 
 
@@ -292,7 +303,7 @@ def check_diff(paths):
         # Check efficiency of both testbenches based upon how many signals are raised.
         totals.append(check_signals(paths, i, test[0]))
 
-    print(f"\nImpl TB was {totals[0]}% efficient VS Reversed TB which was {totals[1]}% efficient.")
+    print(f"\nEfficiency of Impl signals were {totals[0]}% and Reversed signals were {totals[1]}%.")
 
     if (totals[0] < 100.0) & (totals[1] == 100.0):
         print("See unused_signals_impl.txt for more info\n")
