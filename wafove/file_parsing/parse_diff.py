@@ -247,7 +247,7 @@ def append_unequivalent_data(unequivalent_data, data):
 
         time = time + 500
 
-    print(f"{((total-total_raised) / total) * 100}% similarity between netlists.\n")
+    print(f"{round(((total-total_raised) / total), 2) * 100}% similarity between netlists.\n")
 
     return unequivalent_data
 
