@@ -18,9 +18,9 @@ Here is an example of how this modification is performed on a given netlist:
 
 From the results of the modification, we can see that a single bit flip in a LUT on the path of an I/O will result in a single bit difference in the behavior of a correct netlist and a modified netlist. Thus, WaFoVe can properly catch such errors so long as they are on this given path. A percentage of similarity is provided based upon how similar the two netlists are, and from this we can determine how much of an effect a single bit flip in a LUT can have on the entire design.
 
-To confirm whether this detection would be properly handled by WaFoVe, we did this exact test on 5 designs on the impl netlist, 5 on designs on the reversed netlist, and then 5 on the reversed netlist when the LUT was not on the corresponding I/O's path. In these tests, we recorded the percentage change from a non-modified design to a modified design. Here were the results:
+To confirm whether this detection would be properly handled by WaFoVe, we flipped a signle bit on 3 designs on the impl netlist, 3 on designs on the reversed netlist, and then 3 on the reversed netlist when the LUT was not on the corresponding I/O's path. In these tests, we recorded the percentage change from a non-modified design to a modified design. Here were the results:
 
-### Impl Netlist Modification
+### Impl Single-Bit Netlist Modification
 
 #### add4 Modification Results
 | LUT Modified | Initial Bits | Modified Bits | Percent Difference |
@@ -50,6 +50,17 @@ To confirm whether this detection would be properly handled by WaFoVe, we did th
 | result_OBUF[27]_inst_i_17 | 32'h30BB3088 | 32'h30BB3028 | 0% |
 | result_OBUF[28]_inst_i_12 | 32'hFF00FE02 | 32'hFF01FE02 | 0% |
 
+#### and3 Modification Results
+| LUT Modified | Initial Bits | Modified Bits | Percent Difference |
+| --- | --- | --- | --- |
+| o_OBUF_inst_i_1 | 8'h80 | 8'h81 | 2.77% |
+| o_OBUF_inst_i_1 | 8'h80 | 8'h82 | 2.97% |
+| o_OBUF_inst_i_1 | 8'h80 | 8'h84 | 2.38% |
+| o_OBUF_inst_i_1 | 8'h80 | 8'h88 | 2.18% |
+| o_OBUF_inst_i_1 | 8'h80 | 8'h90 | 2.97% |
+| o_OBUF_inst_i_1 | 8'h80 | 8'hA0 | 2.18% |
+| o_OBUF_inst_i_1 | 8'h80 | 8'hC0 | 1.98% |
+| o_OBUF_inst_i_1 | 8'h80 | 8'h00 | 2.57% |
 
  
 #### Average Differences Across All Designs
@@ -57,4 +68,53 @@ To confirm whether this detection would be properly handled by WaFoVe, we did th
 | --- | --- | --- |
 | add4 | No | 3.19% |
 | alu | Yes | 0.25% |
+| and3 | No | 2.50% |
 
+### Impl Five-Bit Netlist Modification
+
+#### add4 Modification Results
+| LUT Modified | Initial Bits | Modified Bits | Percent Difference |
+| --- | --- | --- | --- |
+| o_OBUF[0]_inst_i_1 | 4'h6 | 4'h6 | % |
+| o_OBUF[0]_inst_i_1 | 4'h6 | 4'h6 | % |
+| o_OBUF[1]_inst_i_1  | 16'h8778 | 16'h8778 | % | 
+| o_OBUF[1]_inst_i_1  | 16'h8778 | 16'h8778 | % | 
+| o_OBUF[2]_inst_i_1 | 64'hF880077F077FF880 | 64'hF880077F077FF880 | % |
+| o_OBUF[2]_inst_i_1 | 64'hF880077F077FF880 | 64'hF880077F077FF880 | % |
+| o_OBUF[3]_inst_i_1 | 32'hE81717E8 | 32'hE81717E8 | % |
+| o_OBUF[3]_inst_i_1 | 32'hE81717E8 | 32'hE81717E8 | % |
+| o_OBUF[3]_inst_i_2 | 16'hE888 | 16'hF888 | % |
+| o_OBUF[3]_inst_i_2 | 16'hE888 | 16'hE888 | % |
+
+#### alu Modification Results
+| LUT Modified | Initial Bits | Modified Bits | Percent Difference |
+| --- | --- | --- | --- |
+| result_OBUF[0]_inst_i_1   | 64'hFF00EEEEF0F0EEEE | 64'hFE01EEEFF0F1EEEF | 6.27% |
+| result_OBUF[0]_inst_i_17 | 64'hFC0CFAFAFC0C0A0A | 64'hFC1CEAFAFD0C1A0B | 0% |
+| result_OBUF[0]_inst_i_27 | 16'h9009 | 16'hA24F | 0% |
+| result_OBUF[10]_inst_i_6 | 64'hCFAFCFA0C0AFC0A0 | 64'hCECFCFA0D0CFC0A1 | 0.17% |
+| result_OBUF[16]_inst_i_6 | 64'hCFAFCFA0C0AFC0A0 | 64'hCECFCFA0D0CFC0A1  | 0.33% |
+| result_OBUF[0]_inst_i_3 | 64'h2323232023202020 | 64'h2323322123202031 | 0.5% |
+| result_OBUF[0]_inst_i_29 | 16'h2F02 | 16'h2E1F | 0% |
+| result_OBUF[22]_inst_i_9 | 64'hB080FFFFB0800000 | 64'hC081EFFFB0800030 | 0.17% |
+| result_OBUF[27]_inst_i_17 | 32'h30BB3088 | 32'h30CB318F | 0% |
+| result_OBUF[28]_inst_i_12 | 32'hFF00FE02 | 32'hFF30FE0F | 0% |
+
+#### and3 Modification Results
+| LUT Modified | Initial Bits | Modified Bits | Percent Difference |
+| --- | --- | --- | --- |
+| o_OBUF_inst_i_1 | 8'h80 | 8'h80 | % |
+| o_OBUF_inst_i_1 | 8'h80 | 8'h80 | % |
+| o_OBUF_inst_i_1 | 8'h80 | 8'h80 | % |
+| o_OBUF_inst_i_1 | 8'h80 | 8'h80 | % |
+| o_OBUF_inst_i_1 | 8'h80 | 8'h80 | % |
+| o_OBUF_inst_i_1 | 8'h80 | 8'h80 | % |
+| o_OBUF_inst_i_1 | 8'h80 | 8'h80 | % |
+| o_OBUF_inst_i_1 | 8'h80 | 8'h80 | % |
+
+#### Average Differences Across All Designs
+| Design Name | Equivalent on Average? | Average Percent Difference |
+| --- | --- | --- |
+| add4 | No | % |
+| alu | Yes | 0.74% |
+| and3 | No | % |
