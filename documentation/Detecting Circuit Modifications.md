@@ -98,28 +98,62 @@ To confirm whether this detection would be properly handled by WaFoVe, we flippe
 #### add4 Modification Results
 | LUT Modified | Initial Bits | Modified Bits | Percent Difference |
 | --- | --- | --- | --- |
-| | |  | % |
+
 
 #### alu Modification Results
 | LUT Modified | Initial Bits | Modified Bits | Percent Difference |
 | --- | --- | --- | --- |
-| result_OBUF[0]_inst_i_1   | 64'hFF00EEEEF0F0EEEE | 64'hFE01EEEFF0F1EEEF | 6.27% |
-| result_OBUF[10]_inst_i_6 | 64'hCFAFCFA0C0AFC0A0 | 64'hCECFCFA0D0CFC0A1 | 0.17% |
-| result_OBUF[16]_inst_i_6 | 64'hCFAFCFA0C0AFC0A0 | 64'hCECFCFA0D0CFC0A1  | 0.33% |
-| result_OBUF[0]_inst_i_3 | 64'h2323232023202020 | 64'h2323322123202031 | 0.5% |
-| result_OBUF[22]_inst_i_9 | 64'hB080FFFFB0800000 | 64'hC081EFFFB0800030 | 0.17% |
 
 #### and3 Modification Results
 | LUT Modified | Initial Bits | Modified Bits | Percent Difference |
 | --- | --- | --- | --- |
-|  | | | % |
+
+
 
 #### Average Differences Across All Designs
 | Design Name | Average Percent Difference |
 | --- | --- |
 | add4 | % |
-| alu | 1.5% |
+| alu | % |
 | and3 | % |
+
+### Reversed Five-Bit Netlist Modification
+
+#### add4 Modification Results
+| LUT Modified | Initial Bits | Modified Bits | Percent Difference |
+| --- | --- | --- | --- |
+| CLBLL_L_X2Y105_SLICE_X0Y105_DLUT | 64'h5a5a5a5a5a5a5a5a | 64'h5e525c5a5a1a5a5a | 6.68% |
+| CLBLL_L_X2Y105_SLICE_X0Y105_BLUT | 64'he817a05f17e85fa0 | 64'hc85fa05f17e8df80 | 0.99% |
+| CLBLL_L_X2Y105_SLICE_X0Y105_DLUT | 64'h5a5a5a5a5a5a5a5a | 64'h5e5a5a5ada5a1a59 | 6.68% |
+| CLBLL_L_X2Y105_SLICE_X0Y105_CLUT | 64'hc993366cc993366c | 64'hc99b366cc1c3366e | 0.5% |
+| CLBLL_L_X2Y105_SLICE_X0Y105_ALUT | 64'hfaa0a0a0a55a5a5a | 64'hfea0a6a2a5da5a5a | 3.71% |
+
+
+#### alu Modification Results
+| LUT Modified | Initial Bits | Modified Bits | Percent Difference |
+| --- | --- | --- | --- |
+| CLBLL_L_X34Y117_SLICE_X51Y117_ALUT | 64'hfffcfff8fff8fff0 | 64'hbffc3ff8eef8fff0 | 0.66% |
+| CLBLL_L_X34Y121_SLICE_X51Y121_BLUT | 64'hf0f0f0f0d050c000 | 64'hf0f0b0f0d050cc42 | 1.49% |
+| CLBLL_L_X34Y115_SLICE_X51Y115_DLUT | 64'hff5f000a44ff4400 | 64'hf75f000a85ff4440 | 0.17% |
+| CLBLL_L_X38Y125_SLICE_X58Y125_DLUT | 64'h0000000000100000 | 64'h40029 | 0.99% |
+| CLBLM_R_X37Y124_SLICE_X56Y124_DLUT | 64'hf070d050a0208000 | 64'hb070c0d0b0308000 | 0.5% |
+
+#### and3 Modification Results
+| LUT Modified | Initial Bits | Modified Bits | Percent Difference |
+| --- | --- | --- | --- |
+| CLBLL_L_X2Y102_SLICE_X0Y102_ALUT | 64'hf0000000f0000000 | 64'hb8c00000f0000400 | 4.16% |
+| CLBLL_L_X2Y102_SLICE_X0Y102_ALUT | 64'hf0000000f0000000 | 64'hf0004084f0000820 | 2.97% |
+| CLBLL_L_X2Y102_SLICE_X0Y102_ALUT | 64'hf0000000f0000000 | 64'hf0000180f00a0080 | 2.97% |
+| CLBLL_L_X2Y102_SLICE_X0Y102_ALUT | 64'hf0000000f0000000 | 64'hf0009004f0400080 | 2.18% |
+| CLBLL_L_X2Y102_SLICE_X0Y102_ALUT | 64'hf0000000f0000000 | 64'hf0908000f0000030 | 4.36% |
+
+
+#### Average Differences Across All Designs
+| Design Name | Average Percent Difference |
+| --- | --- |
+| add4 | 3.71% |
+| alu | 0.76% |
+| and3 | 3.32% |
 
 ## Crossed Wires
 
