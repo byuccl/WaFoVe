@@ -98,24 +98,38 @@ To confirm whether this detection would be properly handled by WaFoVe, we flippe
 #### add4 Modification Results
 | LUT Modified | Initial Bits | Modified Bits | Percent Difference |
 | --- | --- | --- | --- |
-
+| o_OBUF[1]_inst_i_1  | 16'h8778 | 16'h8FFF | 7.67% | 
+| o_OBUF[2]_inst_i_1 | 64'hF880077F077FF880 | 64'hF880077FF77FF980 | 1.98% |
+| o_OBUF[3]_inst_i_1 | 32'hE81717E8 | 32'hE88787F8 | 3.22% |
+| o_OBUF[3]_inst_i_2 | 16'hE888 | 16'hE292 | 1.98% |
+| o_OBUF[1]_inst_i_1  | 16'h8778 | 16'h1671 | 9.9% | 
 
 #### alu Modification Results
-| LUT Modified | Initial Bits | Modified Bits | Percent Difference |
+| LUT Modified | Initial Bits | Modified Bits | Average Percent Difference |
 | --- | --- | --- | --- |
+| result_OBUF[0]_inst_i_1   | 64'hFF00EEEEF0F0EEEE | 64'hFF00EEEEF0FFEEEF | 4.29% |
+| result_OBUF[30]_inst_i_8 | 64'hC030E2F0C0FCE2F0 | 64'hC03FE2F0C0FCE2F1 | 0.83% |
+| result_OBUF[3]_inst_i_4 | 64'hFF6F006000000000 | 64'hFF6F00F000000700 | 0.66% |
+| result_OBUF[5]_inst_i_4 | 64'hFF6F006000000000 | 64'hF06F006000000001 | 1.32% |
+| result_OBUF[3]_inst_i_4 | 64'hFF6F006000000000 | 64'hFE6F00F100000010 | 1.49% |
 
 #### and3 Modification Results
 | LUT Modified | Initial Bits | Modified Bits | Percent Difference |
 | --- | --- | --- | --- |
+| o_OBUF_inst_i_1 | 8'h80 | 8'h9F | 13.27% |
+| o_OBUF_inst_i_1 | 8'h80 | 8'h0F | 12.87% |
+| o_OBUF_inst_i_1 | 8'h80 | 8'hAF | 12.38% |
+| o_OBUF_inst_i_1 | 8'h80 | 8'hF3 | 12.87% |
+| o_OBUF_inst_i_1 | 8'h80 | 8'hF9 | 12.08% |
 
 
 
 #### Average Differences Across All Designs
 | Design Name | Average Percent Difference |
 | --- | --- |
-| add4 | % |
-| alu | % |
-| and3 | % |
+| add4 | 4.95% |
+| alu | 1.72% |
+| and3 | 12.69% |
 
 ### Reversed Five-Bit Netlist Modification
 
@@ -163,6 +177,5 @@ To confirm whether this detection would be properly handled by WaFoVe, we flippe
 | Wire1 | Wire2 | Percent Difference |
 | --- | --- | --- |
 | result_OBUF[0]_inst_i_2_n_0  | result_OBUF[14]_inst_i_7_n_0 | 1.82% |
-| result_OBUF[0]_inst_i_45_n_0 | result_OBUF[0]_inst_i_37_n_0 | 0% | 
 | result_OBUF[0]_inst_i_13_n_0 | result_OBUF[10]_inst_i_7_n_0 | 0.33% | 
 
