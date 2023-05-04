@@ -1,4 +1,4 @@
-Note: These tests are based on the tests performed in "Approaches for FPGA Design Assurance" from 27 December 2021. 
+Note: These tests are based on the LUT Corruption tests performed in "Approaches for FPGA Design Assurance" from 27 December 2021. 
 To reference the article, see section 5.4 using this link: https://dl.acm.org/doi/10.1145/3491233
 
 ## LUT Corruption
@@ -170,14 +170,3 @@ To confirm whether this detection would be properly handled by WaFoVe, we flippe
 | add4 | 3.71% |
 | alu | 0.76% |
 | and3 | 3.32% |
-
-## Crossed Wires
-
-### Impl Single-Switch Netlist Modification
-
-#### alu Modification Results
-| Wire1 | Wire2 | Percent Difference |
-| --- | --- | --- |
-| result_OBUF[0]_inst_i_2_n_0  | result_OBUF[14]_inst_i_7_n_0 | 1.82% |
-| result_OBUF[0]_inst_i_13_n_0 | result_OBUF[10]_inst_i_7_n_0 | 0.33% | 
-
