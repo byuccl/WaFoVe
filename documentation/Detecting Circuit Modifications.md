@@ -20,6 +20,8 @@ From the results of the modification, we can see that a single bit flip in a LUT
 
 To confirm whether this detection would be properly handled by WaFoVe, we flipped a single bit on 3 designs on the impl netlist and then 3 on designs on the reversed netlist. In these tests, we recorded the percentage change from a non-modified design to a modified design. Here were the results:
 
+![image](pictures/Bit_Flipping_Results.png)
+
 ### Impl Single-Bit Netlist Modification
 
 #### add4 Modification Results
