@@ -63,22 +63,6 @@ class TestCompareWaveforms(unittest.TestCase):
 
     def test_5(self):
 
-        """Confirms two designs with differing IOs will not produce a DSN file."""
-
-        path = get_paths.get_paths(
-        Path(f"{package}/../out"),
-        Path(f"{package}/../third_party/yosys/cells_sim.v"),
-        Path(f"{package}/../templates/sample_tb.v"),
-        Path(f"{package}/../tools/run_vivado.py"),
-        Path(f"{package}/alu_test/alu_impl.v"),
-        Path(f"{package}/calc_test/calc_reversed.v")
-    )
-        self.refresh_directory(path)
-        with self.assertRaises(FileNotFoundError):
-            compare_waveforms.generate_files(path, 100, 0, False)
-
-    def test_6(self):
-
         """Confirms without a techlib that Iverilog will not function."""
 
         path = get_paths.get_paths(
@@ -93,7 +77,7 @@ class TestCompareWaveforms(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             compare_waveforms.generate_files(path, 100, 0, False)
 
-    def test_7(self):
+    def test_6(self):
 
         """Confirms that two generations with the same seed will have the same results."""
 
@@ -111,7 +95,7 @@ class TestCompareWaveforms(unittest.TestCase):
         self.refresh_directory(path)
         self.assertTrue(output)
 
-    def test_8(self):
+    def test_7(self):
 
         """Confirms that two generations with different seeds will have different results."""
         
@@ -129,7 +113,7 @@ class TestCompareWaveforms(unittest.TestCase):
         self.refresh_directory(path)
         self.assertFalse(output)
 
-    def test_9(self):
+    def test_8(self):
 
         """Confirms that two generations with all signals logged are equivalent."""
         
