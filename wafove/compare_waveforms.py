@@ -84,17 +84,23 @@ def run_test(paths):
 
 
 def parse_args(package_path):
-
     """Creates the argument parser for the Vivado Launcher."""
 
     parser = argparse.ArgumentParser(description="Run WaFoVe.")
+
+    parser.add_argument(
+        "--top",
+        action="store",
+        help="The top module name for the gold netlist.",
+        required=True,
+    )
 
     parser.add_argument(
         "-a",
         "--allSignals",
         action="store_true",
         help="Compares all signals rather than IOs (Typically returns false).",
-        default=False
+        default=False,
     )
 
     parser.add_argument(
@@ -179,14 +185,13 @@ def parse_args(package_path):
 
     args = parser.parse_args()
 
-    if(args.verbose):
+    if args.verbose:
         logging.root.setLevel(logging.NOTSET)
 
     return args
 
 
 if __name__ == "__main__":
-
     if __file__ != "compare_waveforms.py":
         package = Path(Path().absolute() / __file__[0 : len(__file__) - 20])
     else:
@@ -202,6 +207,7 @@ if __name__ == "__main__":
         package / "tools",
         Path(user_args.fileA),
         Path(user_args.fileB),
+        user_args.top,
     )
 
     if path["vcd"][0].exists() & path["vcd"][1].exists():

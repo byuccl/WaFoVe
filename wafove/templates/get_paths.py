@@ -1,8 +1,9 @@
 """Gets the paths for the waveform comparison tool."""
 
 
-def get_paths(work_dir, tech_lib_path, tb_template_path, run_vivado_path, path_a, path_b):
-
+def get_paths(
+    work_dir, tech_lib_path, tb_template_path, run_vivado_path, path_a, path_b, top
+):
     """A function that gets all of the necessary paths used by the waveform comparison tool."""
 
     paths = {}
@@ -16,7 +17,7 @@ def get_paths(work_dir, tech_lib_path, tb_template_path, run_vivado_path, path_a
     # Path to the sample testbench used for creating the automatic testbench
     paths["sample_tb"] = tb_template_path
 
-    #Path to the vivado python script
+    # Path to the vivado python script
     paths["vivado"] = run_vivado_path
 
     # Paths to the implicit and reversed netlists
@@ -26,9 +27,9 @@ def get_paths(work_dir, tech_lib_path, tb_template_path, run_vivado_path, path_a
 
     # The list of module names (Ex: add4, add4_impl, add4_reversed)
     paths["modules"] = []
-    paths["modules"].append(paths["file"][0].name[0 : len(paths["file"][0].name) - 7])
-    paths["modules"].append(paths["file"][0].name[0 : len(paths["file"][0].name) - 2])
-    paths["modules"].append(paths["file"][1].name[0 : len(paths["file"][1].name) - 2])
+    paths["modules"].append(top)
+    paths["modules"].append(paths["file"][0].stem)
+    paths["modules"].append(paths["file"][1].stem)
 
     # Path to the diff txt file
     paths["diff"] = paths["build_dir"] / "diff.txt"
