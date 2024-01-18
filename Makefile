@@ -3,7 +3,7 @@ install: yosys_cells_sim create_directory run_test
 build: yosys_cells_sim create_directory
 
 packages:
-	sudo apt-get install -y \
+	apt-get install -y \
 		iverilog \
 		gtkwave
 
